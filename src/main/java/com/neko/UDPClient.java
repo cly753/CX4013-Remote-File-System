@@ -1,7 +1,5 @@
 package com.neko;
 
-import oracle.jrockit.jfr.StringConstantPool;
-
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -11,6 +9,7 @@ public class UDPClient {
   public static final int SOCKET_SIZE = 2244;
   public static final int SERVER_PORT = 6789;
   public static final int BUFFER_SIZE = 1000;
+
   /**
    * args give message contents and server hostname
    */
@@ -23,15 +22,15 @@ public class UDPClient {
 
     try {
       //use a free local port
-      socket = new DatagramSocket(SOCKET_SIZE); 
+      socket = new DatagramSocket(SOCKET_SIZE);
 
       //a buffer for sending
-      byte[] byteMessage = message.getBytes(); 
+      byte[] byteMessage = message.getBytes();
 
       //translate user-specified hostname to Intenet address
       InetAddress host = InetAddress.getByName(hostname);
 
-      DatagramPacket request = 
+      DatagramPacket request =
           new DatagramPacket(byteMessage, byteMessage.length, host, SERVER_PORT);
 
       socket.send(request); //send packet using socket method
