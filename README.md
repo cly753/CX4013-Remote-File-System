@@ -28,4 +28,5 @@ $ java -cp . UDPClient "hello" "localhost"
 
 ```Shell
 $ gradle checkstyleMain
+$ gradle checkstyleTest
 ```
