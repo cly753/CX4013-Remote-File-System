@@ -1,9 +1,9 @@
 group 'com.neko'
 version '0.1'
 
-apply plugin: 'java'
-apply plugin: 'idea'
 apply plugin: 'checkstyle'
+apply plugin: 'idea'
+apply plugin: 'java'
 
 sourceCompatibility = 1.7
 

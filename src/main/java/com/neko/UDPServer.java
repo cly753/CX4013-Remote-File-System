@@ -1,7 +1,7 @@
 package com.neko;
 
-import java.net.*;
-import java.io.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 
 public class UDPServer{
 	public static void main(String args[]) {
@@ -28,9 +28,3 @@ public class UDPServer{
 		}
 	}
 }
-
-/*
-$ javac UDPServer.java   
-
-$ java -cp . UDPServer
-*/
