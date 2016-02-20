@@ -8,19 +8,14 @@ import org.junit.Test;
 public class MainTest {
 
     @Test
-    public void test1() {
-
-    }
-
-    @Test
     public void testMsgRead() {
         String path = "http://www.google.com";
         int offset = 3;
         int length = 5;
 
         Msg msg = new MsgRead(path, offset, length);
-        byte[] b = msg.toByte();
-        Msg msgBack = Msg.parse(b);
+        byte[] bytes = msg.toByte();
+        Msg msgBack = Msg.parse(bytes);
 
         assert msg.toString().equals(msgBack.toString());
     }
@@ -32,8 +27,8 @@ public class MainTest {
         String text = "Hello Google";
 
         Msg msg = new MsgInsert(path, offset, text);
-        byte[] b = msg.toByte();
-        Msg msgBack = Msg.parse(b);
+        byte[] bytes = msg.toByte();
+        Msg msgBack = Msg.parse(bytes);
 
         assert msg.toString().equals(msgBack.toString());
     }
