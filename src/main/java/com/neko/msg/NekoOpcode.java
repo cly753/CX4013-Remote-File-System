@@ -14,11 +14,7 @@ public enum NekoOpcode {
     private static final Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
 
     private static final NekoOpcode[] opcode;
-
-    /**
-     * Given a code, return the corresponding {@link NekoOpcode}
-     * For example, getOpcode(0) would return {@link #READ} NekoOpcode
-     */
+    
     public static NekoOpcode getOpcode(byte op) {
         log.log(Level.FINE, String.format("0x%02X", op));
         return opcode[op];
