@@ -1,6 +1,39 @@
-# Neko
+Neko: Remote File System for CX4013 Distributed System.
 
-Remote File System for CX4013 Distributed System
+# Neko CLI
+
+To use Neko CLI, we use the following command to generate Neko CLI binary:
+
+```Shell
+$ gradle installDist
+```
+
+Two files will be generated at `build/install/neko-file-system/bin/` folder, i.e. `neko-file-system` (for MAC OS
+and Linux) and `neko-file-system` (for Windows). We run the CLI by:
+
+```Shell
+$ cd build/install/neko-file-system/bin/
+
+$ ./neko-file-system
+# You should get the following output
+# usage: neko [OPTIONS]...
+#  -help   print this message
+#
+# usage: neko read [ARGS]
+#  -b,--byte <arg>     the number of byte to be read
+#  -o,--offset <arg>   read bytes starting from this offset
+#
+# usage: neko insert [ARGS]
+#  -o,--offset <arg>   insert bytes starting from this offset
+#     --text <arg>     textOption to be inserted
+#
+# usage: neko monitor [ARGS]
+#     --time <arg>   time intervals in milliseconds
+#
+# usage: neko copy <path>
+#
+# usage: neko count <path>
+```
 
 # Getting Started
 
