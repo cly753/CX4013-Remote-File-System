@@ -58,7 +58,7 @@ public class MsgInsert extends Msg {
         out.write(NekoAttr.TEXT);
         out.write(text);
 
-        return out.toByte();
+        return out.toBytes();
     }
 
     @Override

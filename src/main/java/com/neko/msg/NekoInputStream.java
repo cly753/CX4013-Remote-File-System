@@ -34,7 +34,7 @@ public class NekoInputStream {
         return ret;
     }
 
-    public byte[] readByte(int length) {
+    public byte[] readBytes(int length) {
         if (cur + length > data.length) {
             throw new InputMismatchException();
         }
@@ -52,7 +52,7 @@ public class NekoInputStream {
         if (type != NekoDataType.TYPE_INT) {
             throw new InputMismatchException();
         }
-        return convertInt(readByte(INT_LENGTH));
+        return convertInt(readBytes(INT_LENGTH));
     }
 
     public String readString() {
@@ -60,8 +60,8 @@ public class NekoInputStream {
         if (type != NekoDataType.TYPE_STR) {
             throw new InputMismatchException();
         }
-        int len = convertInt(readByte(INT_LENGTH));
-        return convertString(readByte(len));
+        int len = convertInt(readBytes(INT_LENGTH));
+        return convertString(readBytes(len));
     }
 
     public static int convertInt(byte[] bytes) {

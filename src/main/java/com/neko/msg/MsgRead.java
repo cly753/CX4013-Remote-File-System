@@ -61,7 +61,7 @@ public class MsgRead extends Msg {
         out.write(NekoAttr.LENGTH);
         out.write(length);
 
-        return out.toByte();
+        return out.toBytes();
     }
 
     @Override

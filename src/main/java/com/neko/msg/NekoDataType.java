@@ -11,9 +11,9 @@ public enum NekoDataType {
 
     private static final NekoDataType[] type;
 
-    public static NekoDataType getType(byte typeByte) {
-        log.log(Level.FINE, String.format("0x%02X", typeByte));
-        return type[typeByte];
+    public static NekoDataType getType(byte bByte) {
+        log.log(Level.FINE, String.format("0x%02X", bByte));
+        return type[bByte];
     }
 
     static {

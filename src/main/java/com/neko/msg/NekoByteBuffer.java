@@ -5,7 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class NekoByteBuffer {
-    private final static Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
+    private static final Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
 
     private byte[] data;
     private int cur;
@@ -15,56 +15,60 @@ public class NekoByteBuffer {
         this.cur = 0;
     }
 
-    public int writeByte(byte b) {
+    public int writeBytes(byte bByte) {
         if (1 + cur > data.length) {
             throw new InputMismatchException();
         }
-        data[cur] = b;
+        data[cur] = bByte;
         cur++;
         return 1;
     }
 
-    public int writeByte(byte[] b) {
-        if (b.length + cur > data.length) {
+    public int writeBytes(byte[] bytes) {
+        if (bytes.length + cur > data.length) {
             throw new InputMismatchException();
         }
-        System.arraycopy(b, 0, data, cur, b.length);
-        cur += b.length;
-        return b.length;
+        System.arraycopy(bytes, 0, data, cur, bytes.length);
+        cur += bytes.length;
+        return bytes.length;
     }
 
-    public int write(int val) {
-        int nByte = 0;
-        nByte += write(NekoDataType.TYPE_INT); // type
-        nByte += writeByte(toByte(val)); // data
-        return nByte;
+    public int write(int value) {
+        int byteNumber = 0;
+        byteNumber += write(NekoDataType.TYPE_INT); // type
+        byteNumber += writeBytes(toBytes(value)); // data
+        return byteNumber;
     }
 
-    public int write(String s) {
-        int nByte = 0;
-        nByte += write(NekoDataType.TYPE_STR); // type
-        nByte += writeByte(toByte(s.length())); // length
-        nByte += writeByte(toByte(s)); // data
-        return nByte;
+    public int write(String string) {
+        int byteNumber = 0;
+        byteNumber += write(NekoDataType.TYPE_STR); // type
+        byteNumber += writeBytes(toBytes(string.length())); // length
+        byteNumber += writeBytes(toBytes(string)); // data
+        return byteNumber;
     }
 
     public int write(NekoOpcode op) {
-        return writeByte(op.toByte());
+        return writeBytes(op.toByte());
     }
 
     public int write(NekoAttr attr) {
-        return writeByte(attr.toByte());
+        return writeBytes(attr.toByte());
     }
 
     public int write(NekoDataType type) {
-        return writeByte(type.toByte());
+        return writeBytes(type.toByte());
     }
 
-    public byte[] toByte() {
+    public byte[] toBytes() {
         return data; // return reference
     }
 
-    private static byte[] toByte(int val) {
+    /**
+     * Convert integer value to bytes.
+     * It does not add extra attributes such as integer type.
+     */
+    private static byte[] toBytes(int val) {
         //
         // not include
         // Integer type
@@ -74,31 +78,30 @@ public class NekoByteBuffer {
         byte[] ret = new byte[NekoInputStream.INT_LENGTH];
         int mask = 255;
         for (int i = 0; i < NekoInputStream.INT_LENGTH; i++) {
-            if (NekoInputStream.BIG_ENDIAN)
-                ret[NekoInputStream.INT_LENGTH - 1 - i] = (byte)(val & mask);
-            else
-                ret[i] = (byte)(val & mask);
+            if (NekoInputStream.BIG_ENDIAN) {
+                ret[NekoInputStream.INT_LENGTH - 1 - i] = (byte) (val & mask);
+            } else {
+                ret[i] = (byte) (val & mask);
+            }
             val >>= 8;
         }
         return ret;
     }
 
-    private static byte[] toByte(String s) {
-        //
-        // not include
-        // String type
-        // String length
-        //
-
-        log.log(Level.FINE, String.format("%d %s", s.length(), s));
-        return s.getBytes();
+    /**
+     * Convert string value to bytes.
+     * It does not add extra attributes such as string type and string length.
+     */
+    private static byte[] toBytes(String string) {
+        log.log(Level.FINE, String.format("%d %s", string.length(), string));
+        return string.getBytes();
     }
 
     public static int sizeInByte(int val) {
         return 1 + 4; // 1 byte for type + 4 byte for data
     }
 
-    public static int sizeInByte(String s) {
-        return 1 + 4 + s.length(); // 1 type + 4 byte for length + data
+    public static int sizeInByte(String string) {
+        return 1 + 4 + string.length(); // 1 type + 4 byte for length + data
     }
 }
