@@ -11,8 +11,15 @@ import org.apache.commons.cli.ParseException;
 
 public class Neko {
 
-    private static Option offsetOption = OptionBuilder.withLongOpt("offset")
+    private static Option readOffsetOption = OptionBuilder.withLongOpt("offset")
             .withDescription("read bytes starting from this offset")
+            .isRequired()
+            .hasArg()
+            .withType(Integer.class)
+            .create("o");
+
+    private static Option insertOffsetOption = OptionBuilder.withLongOpt("offset")
+            .withDescription("insert bytes starting from this offset")
             .isRequired()
             .hasArg()
             .withType(Integer.class)
@@ -49,10 +56,10 @@ public class Neko {
     public static void main(String[] args) {
         options.addOption(help);
 
-        readOptions.addOption(offsetOption);
+        readOptions.addOption(readOffsetOption);
         readOptions.addOption(byteOption);
 
-        insertOptions.addOption(offsetOption);
+        insertOptions.addOption(insertOffsetOption);
         insertOptions.addOption(textOption);
 
         monitorOptions.addOption(timeOption);
