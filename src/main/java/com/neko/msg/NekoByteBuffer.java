@@ -36,15 +36,15 @@ public class NekoByteBuffer {
     public int write(int value) {
         int byteNumber = 0;
         byteNumber += write(NekoDataType.TYPE_INT); // type
-        byteNumber += writeBytes(toBytes(value)); // data
+        byteNumber += writeBytes(getBytes(value)); // data
         return byteNumber;
     }
 
     public int write(String string) {
         int byteNumber = 0;
         byteNumber += write(NekoDataType.TYPE_STR); // type
-        byteNumber += writeBytes(toBytes(string.length())); // length
-        byteNumber += writeBytes(toBytes(string)); // data
+        byteNumber += writeBytes(getBytes(string.length())); // length
+        byteNumber += writeBytes(getBytes(string)); // data
         return byteNumber;
     }
 
@@ -68,7 +68,7 @@ public class NekoByteBuffer {
      * Convert integer value to bytes.
      * It does not add extra attributes such as integer type.
      */
-    private static byte[] toBytes(int val) {
+    private static byte[] getBytes(int val) {
         //
         // not include
         // Integer type
@@ -92,7 +92,7 @@ public class NekoByteBuffer {
      * Convert string value to bytes.
      * It does not add extra attributes such as string type and string length.
      */
-    private static byte[] toBytes(String string) {
+    private static byte[] getBytes(String string) {
         log.log(Level.FINE, String.format("%d %s", string.length(), string));
         return string.getBytes();
     }
@@ -103,5 +103,17 @@ public class NekoByteBuffer {
 
     public static int sizeInByte(String string) {
         return 1 + 4 + string.length(); // 1 type + 4 byte for length + data
+    }
+
+    public static int sizeInByte(NekoOpcode opcode) {
+        return 1;
+    }
+
+    public static int sizeInByte(NekoAttribute attribute) {
+        return 1;
+    }
+
+    public static int sizeInByte(NekoDataType dataType) {
+        return 1;
     }
 }
