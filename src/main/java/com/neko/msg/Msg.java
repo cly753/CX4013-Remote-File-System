@@ -13,10 +13,8 @@
 package com.neko.msg;
 
 import java.util.InputMismatchException;
-import java.util.logging.Logger;
 
 public abstract class Msg {
-    private final static Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
 
     protected NekoOpcode opcode;
 
