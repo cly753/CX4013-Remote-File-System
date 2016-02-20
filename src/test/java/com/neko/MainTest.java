@@ -14,7 +14,7 @@ public class MainTest {
         int length = 5;
 
         Msg msg = new MsgRead(path, offset, length);
-        byte[] bytes = msg.toByte();
+        byte[] bytes = msg.toBytes();
         Msg msgBack = Msg.parse(bytes);
 
         assert msg.toString().equals(msgBack.toString());
@@ -27,7 +27,7 @@ public class MainTest {
         String text = "Hello Google";
 
         Msg msg = new MsgInsert(path, offset, text);
-        byte[] bytes = msg.toByte();
+        byte[] bytes = msg.toBytes();
         Msg msgBack = Msg.parse(bytes);
 
         assert msg.toString().equals(msgBack.toString());

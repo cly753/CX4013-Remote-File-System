@@ -11,9 +11,9 @@ public enum NekoOpcode {
     COUNT(4),
     RESULT(5);
 
-    private final static Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
+    private static final Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
 
-    public static final NekoOpcode[] opcode;
+    private static final NekoOpcode[] opcode;
 
     public static NekoOpcode getOpcode(byte op) {
         log.log(Level.FINE, String.format("0x%02X", op));
@@ -21,9 +21,9 @@ public enum NekoOpcode {
     }
 
     static {
-        NekoOpcode[] tempOpcode = NekoOpcode.values();
-        opcode = new NekoOpcode[tempOpcode.length];
-        for (NekoOpcode op : tempOpcode) {
+        NekoOpcode[] tempOpcodes = NekoOpcode.values();
+        opcode = new NekoOpcode[tempOpcodes.length];
+        for (NekoOpcode op : tempOpcodes) {
             opcode[op.code] = op;
         }
     }

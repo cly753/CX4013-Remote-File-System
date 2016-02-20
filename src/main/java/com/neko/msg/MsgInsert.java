@@ -1,7 +1,5 @@
 package com.neko.msg;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import java.util.InputMismatchException;
 
 public class MsgInsert extends Msg {
@@ -24,16 +22,16 @@ public class MsgInsert extends Msg {
         String text = null;
 
         for (int i = 0; i < N_ATTR; i++) {
-            NekoAttr attr = NekoAttr.getAttr(in.readOneByte());
+            NekoAttribute attr = NekoAttribute.getAttribute(in.readOneByte());
             switch (attr) {
                 case PATH:
-                    path = in.readStr();
+                    path = in.readString();
                     break;
                 case OFFSET:
                     offset = in.readInt();
                     break;
                 case TEXT:
-                    text = in.readStr();
+                    text = in.readString();
                     break;
                 default:
                     throw new InputMismatchException();
@@ -44,7 +42,7 @@ public class MsgInsert extends Msg {
     }
 
     @Override
-    public byte[] toByte() {
+    public byte[] toBytes() {
         int totalLen = 1 // type
                 + 1 + NekoByteBuffer.sizeInByte(path) // name + path
                 + 1 + NekoByteBuffer.sizeInByte(offset) // name + offset
@@ -53,22 +51,22 @@ public class MsgInsert extends Msg {
         NekoByteBuffer out = new NekoByteBuffer(totalLen);
 
         out.write(super.opcode);
-        out.write(NekoAttr.PATH);
+        out.write(NekoAttribute.PATH);
         out.write(path);
-        out.write(NekoAttr.OFFSET);
+        out.write(NekoAttribute.OFFSET);
         out.write(offset);
-        out.write(NekoAttr.TEXT);
+        out.write(NekoAttribute.TEXT);
         out.write(text);
 
-        return out.toByte();
+        return out.toBytes();
     }
 
     @Override
     public String toString() {
-        return "MsgInsert{" +
-                "path='" + path + '\'' +
-                ", offset=" + offset +
-                ", text='" + text + '\'' +
-                '}';
+        return "MsgInsert{"
+                + "path='" + path + '\''
+                + ", offset=" + offset
+                + ", text='" + text + '\''
+                + '}';
     }
 }
