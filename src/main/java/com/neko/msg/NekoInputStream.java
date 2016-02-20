@@ -55,13 +55,13 @@ public class NekoInputStream {
         return convertInt(readByte(INT_LENGTH));
     }
 
-    public String readStr() {
+    public String readString() {
         NekoDataType type = NekoDataType.getType(readOneByte());
         if (type != NekoDataType.TYPE_STR) {
             throw new InputMismatchException();
         }
         int len = convertInt(readByte(INT_LENGTH));
-        return convertStr(readByte(len));
+        return convertString(readByte(len));
     }
 
     public static int convertInt(byte[] bytes) {
@@ -81,7 +81,7 @@ public class NekoInputStream {
         return val;
     }
 
-    public static String convertStr(byte[] bytes) {
+    public static String convertString(byte[] bytes) {
         log.log(Level.FINE, String.format("%d %s", new String(bytes).length(), new String(bytes)));
         return new String(bytes);
     }

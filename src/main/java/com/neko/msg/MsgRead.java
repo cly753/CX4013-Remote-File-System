@@ -29,7 +29,7 @@ public class MsgRead extends Msg {
             log.log(Level.FINE, String.format(i + ": " + attr));
             switch (attr) {
                 case PATH:
-                    path = in.readStr();
+                    path = in.readString();
                     break;
                 case OFFSET:
                     offset = in.readInt();

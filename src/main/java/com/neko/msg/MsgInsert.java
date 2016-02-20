@@ -1,7 +1,5 @@
 package com.neko.msg;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import java.util.InputMismatchException;
 
 public class MsgInsert extends Msg {
@@ -27,13 +25,13 @@ public class MsgInsert extends Msg {
             NekoAttr attr = NekoAttr.getAttr(in.readOneByte());
             switch (attr) {
                 case PATH:
-                    path = in.readStr();
+                    path = in.readString();
                     break;
                 case OFFSET:
                     offset = in.readInt();
                     break;
                 case TEXT:
-                    text = in.readStr();
+                    text = in.readString();
                     break;
                 default:
                     throw new InputMismatchException();
