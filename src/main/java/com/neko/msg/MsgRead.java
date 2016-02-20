@@ -5,9 +5,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MsgRead extends Msg {
-    private final static Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
+    private static final Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
 
-    private static final int N_ATTR = 3; // number of attributes
+    private static final int NUMBER_ATTRIBUTES = 3;
+
     private String path;
     private int offset;
     private int length;
@@ -24,7 +25,7 @@ public class MsgRead extends Msg {
         int offset = -1;
         int length = -1;
 
-        for (int i = 0; i < N_ATTR; i++) {
+        for (int i = 0; i < NUMBER_ATTRIBUTES; i++) {
             NekoAttribute attr = NekoAttribute.getAttribute(in.readOneByte());
             log.log(Level.FINE, String.format(i + ": " + attr));
             switch (attr) {
@@ -45,7 +46,7 @@ public class MsgRead extends Msg {
     }
 
     @Override
-    public byte[] toByte() {
+    public byte[] toBytes() {
         int totalLen = 1 // type
                 + 1 + NekoByteBuffer.sizeInByte(path) // name + path
                 + 1 + NekoByteBuffer.sizeInByte(offset) // name + offset
@@ -66,10 +67,10 @@ public class MsgRead extends Msg {
 
     @Override
     public String toString() {
-        return "MsgRead{" +
-                "path='" + path + '\'' +
-                ", offset=" + offset +
-                ", length=" + length +
-                '}';
+        return "MsgRead{"
+                + "path='" + path + '\''
+                + ", offset=" + offset
+                + ", length=" + length
+                + '}';
     }
 }

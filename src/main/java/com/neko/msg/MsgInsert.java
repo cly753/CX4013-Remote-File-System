@@ -42,7 +42,7 @@ public class MsgInsert extends Msg {
     }
 
     @Override
-    public byte[] toByte() {
+    public byte[] toBytes() {
         int totalLen = 1 // type
                 + 1 + NekoByteBuffer.sizeInByte(path) // name + path
                 + 1 + NekoByteBuffer.sizeInByte(offset) // name + offset
@@ -63,10 +63,10 @@ public class MsgInsert extends Msg {
 
     @Override
     public String toString() {
-        return "MsgInsert{" +
-                "path='" + path + '\'' +
-                ", offset=" + offset +
-                ", text='" + text + '\'' +
-                '}';
+        return "MsgInsert{"
+                + "path='" + path + '\''
+                + ", offset=" + offset
+                + ", text='" + text + '\''
+                + '}';
     }
 }

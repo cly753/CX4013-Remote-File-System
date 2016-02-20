@@ -22,8 +22,8 @@ public abstract class Msg {
         this.opcode = opcode;
     }
 
-    public static Msg parse(byte[] b) {
-        NekoInputStream in = new NekoInputStream(b);
+    public static Msg parse(byte[] bytes) {
+        NekoInputStream in = new NekoInputStream(bytes);
         NekoOpcode opcode = NekoOpcode.getOpcode(in.readOneByte());
 
         Msg msg;
@@ -40,5 +40,5 @@ public abstract class Msg {
         return msg;
     }
 
-    public abstract byte[] toByte();
+    public abstract byte[] toBytes();
 }
