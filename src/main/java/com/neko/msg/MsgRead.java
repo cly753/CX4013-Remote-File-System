@@ -25,7 +25,7 @@ public class MsgRead extends Msg {
         int length = -1;
 
         for (int i = 0; i < N_ATTR; i++) {
-            NekoAttr attr = NekoAttr.getAttr(in.readOneByte());
+            NekoAttribute attr = NekoAttribute.getAttribute(in.readOneByte());
             log.log(Level.FINE, String.format(i + ": " + attr));
             switch (attr) {
                 case PATH:
@@ -54,11 +54,11 @@ public class MsgRead extends Msg {
         NekoByteBuffer out = new NekoByteBuffer(totalLen);
 
         out.write(super.opcode);
-        out.write(NekoAttr.PATH);
+        out.write(NekoAttribute.PATH);
         out.write(path);
-        out.write(NekoAttr.OFFSET);
+        out.write(NekoAttribute.OFFSET);
         out.write(offset);
-        out.write(NekoAttr.LENGTH);
+        out.write(NekoAttribute.LENGTH);
         out.write(length);
 
         return out.toBytes();

@@ -52,7 +52,7 @@ public class NekoByteBuffer {
         return writeBytes(op.toByte());
     }
 
-    public int write(NekoAttr attr) {
+    public int write(NekoAttribute attr) {
         return writeBytes(attr.toByte());
     }
 

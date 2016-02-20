@@ -22,7 +22,7 @@ public class MsgInsert extends Msg {
         String text = null;
 
         for (int i = 0; i < N_ATTR; i++) {
-            NekoAttr attr = NekoAttr.getAttr(in.readOneByte());
+            NekoAttribute attr = NekoAttribute.getAttribute(in.readOneByte());
             switch (attr) {
                 case PATH:
                     path = in.readString();
@@ -51,11 +51,11 @@ public class MsgInsert extends Msg {
         NekoByteBuffer out = new NekoByteBuffer(totalLen);
 
         out.write(super.opcode);
-        out.write(NekoAttr.PATH);
+        out.write(NekoAttribute.PATH);
         out.write(path);
-        out.write(NekoAttr.OFFSET);
+        out.write(NekoAttribute.OFFSET);
         out.write(offset);
-        out.write(NekoAttr.TEXT);
+        out.write(NekoAttribute.TEXT);
         out.write(text);
 
         return out.toBytes();
