@@ -5,9 +5,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MsgRead extends Msg {
-    private final static Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
+    private static final Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
 
-    private static final int N_ATTR = 3; // number of attributes
+    private static final int NUMBER_ATTRIBUTES = 3;
+
     private String path;
     private int offset;
     private int length;
@@ -24,12 +25,12 @@ public class MsgRead extends Msg {
         int offset = -1;
         int length = -1;
 
-        for (int i = 0; i < N_ATTR; i++) {
-            NekoAttr attr = NekoAttr.getAttr(in.readOneByte());
+        for (int i = 0; i < NUMBER_ATTRIBUTES; i++) {
+            NekoAttribute attr = NekoAttribute.getAttribute(in.readOneByte());
             log.log(Level.FINE, String.format(i + ": " + attr));
             switch (attr) {
                 case PATH:
-                    path = in.readStr();
+                    path = in.readString();
                     break;
                 case OFFSET:
                     offset = in.readInt();
@@ -45,7 +46,7 @@ public class MsgRead extends Msg {
     }
 
     @Override
-    public byte[] toByte() {
+    public byte[] toBytes() {
         int totalLen = 1 // type
                 + 1 + NekoByteBuffer.sizeInByte(path) // name + path
                 + 1 + NekoByteBuffer.sizeInByte(offset) // name + offset
@@ -54,22 +55,22 @@ public class MsgRead extends Msg {
         NekoByteBuffer out = new NekoByteBuffer(totalLen);
 
         out.write(super.opcode);
-        out.write(NekoAttr.PATH);
+        out.write(NekoAttribute.PATH);
         out.write(path);
-        out.write(NekoAttr.OFFSET);
+        out.write(NekoAttribute.OFFSET);
         out.write(offset);
-        out.write(NekoAttr.LENGTH);
+        out.write(NekoAttribute.LENGTH);
         out.write(length);
 
-        return out.toByte();
+        return out.toBytes();
     }
 
     @Override
     public String toString() {
-        return "MsgRead{" +
-                "path='" + path + '\'' +
-                ", offset=" + offset +
-                ", length=" + length +
-                '}';
+        return "MsgRead{"
+                + "path='" + path + '\''
+                + ", offset=" + offset
+                + ", length=" + length
+                + '}';
     }
 }
