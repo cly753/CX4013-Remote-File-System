@@ -21,9 +21,9 @@ public enum NekoOpcode {
     }
 
     static {
-        NekoOpcode[] tempOpcode = NekoOpcode.values();
-        opcode = new NekoOpcode[tempOpcode.length];
-        for (NekoOpcode op : tempOpcode) {
+        NekoOpcode[] tempOpcodes = NekoOpcode.values();
+        opcode = new NekoOpcode[tempOpcodes.length];
+        for (NekoOpcode op : tempOpcodes) {
             opcode[op.code] = op;
         }
     }
