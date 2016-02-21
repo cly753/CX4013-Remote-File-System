@@ -15,7 +15,7 @@ public class NekoByteBuffer {
         this.cur = 0;
     }
 
-    public int writeBytes(byte bByte) {
+    private int writeBytes(byte bByte) {
         if (1 + cur > data.length) {
             throw new InputMismatchException();
         }
@@ -24,7 +24,7 @@ public class NekoByteBuffer {
         return 1;
     }
 
-    public int writeBytes(byte[] bytes) {
+    private int writeBytes(byte[] bytes) {
         if (bytes.length + cur > data.length) {
             throw new InputMismatchException();
         }
@@ -69,11 +69,6 @@ public class NekoByteBuffer {
      * It does not add extra attributes such as integer type.
      */
     private static byte[] getBytes(int val) {
-        //
-        // not include
-        // Integer type
-        //
-
         log.log(Level.FINE, String.format("%d", val));
         byte[] ret = new byte[NekoInputStream.INT_LENGTH];
         int mask = 255;

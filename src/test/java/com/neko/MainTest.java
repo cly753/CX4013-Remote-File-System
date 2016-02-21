@@ -44,22 +44,10 @@ public class MainTest {
         origin.setOffset(offset);
         origin.setText(text);
 
-        int totalSize = NekoByteBuffer.sizeInByte(opcode)
-                + 1
-                + NekoByteBuffer.sizeInByte(path)
-                + 1
-                + NekoByteBuffer.sizeInByte(offset)
-                + 1
-                + NekoByteBuffer.sizeInByte(text);
-        NekoByteBuffer byteBuffer = new NekoByteBuffer(totalSize);
-        byteBuffer.write(opcode);
-        byteBuffer.write(NekoAttribute.PATH);
-        byteBuffer.write(path);
-        byteBuffer.write(NekoAttribute.OFFSET);
-        byteBuffer.write(offset);
-        byteBuffer.write(NekoAttribute.TEXT);
-        byteBuffer.write(text);
+        NekoByteBuffer byteBuffer = new NekoByteBuffer(NekoSerializer.sizeInByte(origin));
+        NekoSerializer serializer = new NekoSerializer(byteBuffer);
 
+        serializer.serialize(origin);
         byte[] bytes = byteBuffer.toBytes();
 
         NekoDeserializer deserializer = new NekoDeserializer();

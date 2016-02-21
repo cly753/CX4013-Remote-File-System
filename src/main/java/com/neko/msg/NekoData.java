@@ -6,22 +6,55 @@ public class NekoData {
     private NekoOpcode opcode;
 
     private String path;
-    private int offset;
-    private int interval;
-    private int ack;
-    private int error;
+    private Integer offset;
+    private Integer interval;
+    private Integer ack;
+    private Integer error;
     private String text;
-    private int length;
+    private Integer length;
 
     private Map<String, Object> additionalAttributes;
 
+    /**
+     * Leave attributes to null meaning that they are not set
+     *
+     * TODO
+     * Find a smarter solution ?
+     */
     public NekoData() {
-        //
-        // TODO
-        // initialize all attributes to
-        // "invalid"
-        // ?
-        //
+
+    }
+
+    public NekoOpcode getOpcode() {
+        return opcode;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public Integer getOffset() {
+        return offset;
+    }
+
+    public Integer getInterval() {
+        return interval;
+    }
+
+    public Integer getAck() {
+        return ack;
+    }
+
+    public Integer getError() {
+        return error;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public Integer getLength() {
+        return length;
     }
 
     public void setOpcode(NekoOpcode opcode) {
@@ -57,6 +90,9 @@ public class NekoData {
     }
 
     @Override
+    /*
+    * Auto-generated.
+    * */
     public String toString() {
         return "NekoData{"
                 + "opcode=" + opcode

@@ -2,6 +2,7 @@ package com.neko.msg;
 
 import java.util.InputMismatchException;
 
+@Deprecated
 public class MsgInsert extends Msg {
     private static final int N_ATTR = 3; // number of attributes
 
