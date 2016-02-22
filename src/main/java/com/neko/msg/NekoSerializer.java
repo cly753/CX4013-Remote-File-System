@@ -2,10 +2,8 @@ package com.neko.msg;
 
 public class NekoSerializer {
 
-    private NekoByteBuffer byteBuffer;
+    public NekoSerializer() {
 
-    public NekoSerializer(NekoByteBuffer byteBuffer) {
-        this.byteBuffer = byteBuffer;
     }
 
     /**
@@ -15,21 +13,25 @@ public class NekoSerializer {
      * TODO
      * Hardcoded all attributes for now.
      */
-    public void serialize(NekoData data) {
-        serialize(data.getOpcode());
-        trySerialize(NekoAttribute.PATH, data.getPath());
-        trySerialize(NekoAttribute.OFFSET, data.getOffset());
-        trySerialize(NekoAttribute.INTERVAL, data.getInterval());
-        trySerialize(NekoAttribute.ACK, data.getAck());
-        trySerialize(NekoAttribute.ERROR, data.getError());
-        trySerialize(NekoAttribute.TEXT, data.getText());
-        trySerialize(NekoAttribute.LENGTH, data.getLength());
+    public NekoByteBuffer serialize(NekoData data) {
+        NekoByteBuffer byteBuffer = new NekoByteBuffer(NekoSerializer.sizeInByte(data));
+
+        serialize(data.getOpcode(), byteBuffer);
+        trySerialize(NekoAttribute.PATH, data.getPath(), byteBuffer);
+        trySerialize(NekoAttribute.OFFSET, data.getOffset(), byteBuffer);
+        trySerialize(NekoAttribute.INTERVAL, data.getInterval(), byteBuffer);
+        trySerialize(NekoAttribute.ACK, data.getAck(), byteBuffer);
+        trySerialize(NekoAttribute.ERROR, data.getError(), byteBuffer);
+        trySerialize(NekoAttribute.TEXT, data.getText(), byteBuffer);
+        trySerialize(NekoAttribute.LENGTH, data.getLength(), byteBuffer);
+
+        return byteBuffer;
     }
 
     /**
      * Serialize opcode to the byteBuffer:NekoByteBuffer.
      */
-    public void serialize(NekoOpcode opcode) {
+    private void serialize(NekoOpcode opcode, NekoByteBuffer byteBuffer) {
         byteBuffer.write(opcode);
     }
 
@@ -39,7 +41,7 @@ public class NekoSerializer {
      * Otherwise, it will serialize the attribute's name and data
      * to the byteBuffer:NekoByteBuffer.
      */
-    public void trySerialize(NekoAttribute attributeName, Integer attribute) {
+    private void trySerialize(NekoAttribute attributeName, Integer attribute, NekoByteBuffer byteBuffer) {
         if (null != attribute) {
             byteBuffer.write(attributeName);
             byteBuffer.write(attribute);
@@ -52,7 +54,7 @@ public class NekoSerializer {
      * Otherwise, it will serialize the attribute's name and data
      * to the byteBuffer:NekoByteBuffer.
      */
-    public void trySerialize(NekoAttribute attributeName, String attribute) {
+    private void trySerialize(NekoAttribute attributeName, String attribute, NekoByteBuffer byteBuffer) {
         if (null != attribute) {
             byteBuffer.write(attributeName);
             byteBuffer.write(attribute);
@@ -66,7 +68,7 @@ public class NekoSerializer {
      * TODO
      * Hardcoded all attributes for now.
      */
-    public static int sizeInByte(NekoData data) {
+    private static int sizeInByte(NekoData data) {
         return NekoByteBuffer.sizeInByte(data.getOpcode())
                 + sizeInByte(data.getPath())
                 + sizeInByte(data.getOffset())
@@ -83,7 +85,7 @@ public class NekoSerializer {
      * If the attributes is null standing for the attribute does not exist,
      * it returns 0.
      */
-    public static int sizeInByte(Integer attribute) {
+    private static int sizeInByte(Integer attribute) {
         if (null == attribute) {
             return 0;
         } else {
@@ -98,7 +100,7 @@ public class NekoSerializer {
      * If the attributes is null standing for the attribute does not exist,
      * it returns 0.
      */
-    public static int sizeInByte(String attribute) {
+    private static int sizeInByte(String attribute) {
         if (null == attribute) {
             return 0;
         } else {

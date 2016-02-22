@@ -44,10 +44,9 @@ public class MainTest {
         origin.setOffset(offset);
         origin.setText(text);
 
-        NekoByteBuffer byteBuffer = new NekoByteBuffer(NekoSerializer.sizeInByte(origin));
-        NekoSerializer serializer = new NekoSerializer(byteBuffer);
+        NekoSerializer serializer = new NekoSerializer();
 
-        serializer.serialize(origin);
+        NekoByteBuffer byteBuffer = serializer.serialize(origin);
         byte[] bytes = byteBuffer.toBytes();
 
         NekoDeserializer deserializer = new NekoDeserializer();
