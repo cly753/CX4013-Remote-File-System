@@ -18,8 +18,7 @@ public class NekoData {
     /**
      * Leave attributes to null meaning that they are not set
      *
-     * TODO
-     * Find a smarter solution ?
+     * TODO(cly753):Find a smarter solution?
      */
     public NekoData() {
 
@@ -90,14 +89,11 @@ public class NekoData {
     }
 
     @Override
-    /*
-    * Auto-generated.
-    * */
     public String toString() {
         return "NekoData{"
                 + "opcode=" + opcode
-                +", path='" + path + '\''
-                +", offset=" + offset
+                + ", path='" + path + '\''
+                + ", offset=" + offset
                 + ", interval=" + interval
                 + ", ack=" + ack
                 + ", error=" + error

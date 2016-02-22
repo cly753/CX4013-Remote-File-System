@@ -74,8 +74,7 @@ public class NekoSerializer {
                 + sizeInByte(data.getAck())
                 + sizeInByte(data.getError())
                 + sizeInByte(data.getText())
-                + sizeInByte(data.getLength())
-                ;
+                + sizeInByte(data.getLength());
     }
 
     /**
@@ -87,10 +86,8 @@ public class NekoSerializer {
     public static int sizeInByte(Integer attribute) {
         if (null == attribute) {
             return 0;
-        }
-        else {
-            return 1
-                    + NekoByteBuffer.sizeInByte(attribute);
+        } else {
+            return 1 + NekoByteBuffer.sizeInByte(attribute);
         }
 
     }
@@ -104,10 +101,8 @@ public class NekoSerializer {
     public static int sizeInByte(String attribute) {
         if (null == attribute) {
             return 0;
-        }
-        else {
-            return 1
-                    + NekoByteBuffer.sizeInByte(attribute);
+        } else {
+            return 1 + NekoByteBuffer.sizeInByte(attribute);
         }
     }
 }
