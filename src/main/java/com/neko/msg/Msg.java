@@ -14,6 +14,7 @@ package com.neko.msg;
 
 import java.util.InputMismatchException;
 
+@Deprecated
 public abstract class Msg {
 
     protected NekoOpcode opcode;

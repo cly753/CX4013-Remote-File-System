@@ -48,7 +48,7 @@ public class NekoInputStream {
     }
 
     public int readInt() {
-        NekoDataType type = NekoDataType.getType(readOneByte());
+        NekoDataType type = readDataType();
         if (type != NekoDataType.TYPE_INT) {
             throw new InputMismatchException();
         }
@@ -56,12 +56,28 @@ public class NekoInputStream {
     }
 
     public String readString() {
-        NekoDataType type = NekoDataType.getType(readOneByte());
+        NekoDataType type = readDataType();
         if (type != NekoDataType.TYPE_STR) {
             throw new InputMismatchException();
         }
         int len = convertInt(readBytes(INT_LENGTH));
         return convertString(readBytes(len));
+    }
+
+    public NekoOpcode readOpcode() {
+        return NekoOpcode.getOpcode(readOneByte());
+    }
+
+    public NekoAttribute readAttribute() {
+        return NekoAttribute.getAttribute(readOneByte());
+    }
+
+    public NekoDataType readDataType() {
+        return NekoDataType.getType(readOneByte());
+    }
+
+    public boolean hasNext() {
+        return cur != data.length;
     }
 
     public static int convertInt(byte[] bytes) {
@@ -85,5 +101,4 @@ public class NekoInputStream {
         log.log(Level.FINE, String.format("%d %s", new String(bytes).length(), new String(bytes)));
         return new String(bytes);
     }
-
 }

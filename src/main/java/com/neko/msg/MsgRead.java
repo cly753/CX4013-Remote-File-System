@@ -4,6 +4,7 @@ import java.util.InputMismatchException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@Deprecated
 public class MsgRead extends Msg {
     private static final Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
 
