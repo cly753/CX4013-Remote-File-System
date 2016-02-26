@@ -34,17 +34,20 @@ public class NekoDeserializer {
                 case INTERVAL:
                     deserialized.setInterval(in.readInt());
                     break;
-                case ACK:
-                    deserialized.setAck(in.readInt());
-                    break;
-                case ERROR:
-                    deserialized.setError(in.readInt());
-                    break;
                 case TEXT:
                     deserialized.setText(in.readString());
                     break;
                 case LENGTH:
                     deserialized.setLength(in.readInt());
+                    break;
+                case RESPONSE:
+                    deserialized.setResponse(in.readInt());
+                    break;
+                case NUMBER:
+                    deserialized.setNumber(in.readInt());
+                    break;
+                case ERROR:
+                    deserialized.setError(in.readString());
                     break;
                 default:
                     throw new InputMismatchException();

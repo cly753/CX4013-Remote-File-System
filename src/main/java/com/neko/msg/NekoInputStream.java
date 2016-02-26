@@ -12,7 +12,6 @@ public class NekoInputStream {
 
     /**
      * Big Endian: MSB at lowest memory address
-     * TODO(cly753): when will it be false?
      */
     public static final boolean BIG_ENDIAN = true;
 

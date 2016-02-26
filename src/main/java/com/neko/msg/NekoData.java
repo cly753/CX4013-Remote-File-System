@@ -1,3 +1,9 @@
+//
+// Neko Message Format
+//
+// Refer to (Google Docs)
+//
+
 package com.neko.msg;
 
 import java.util.Map;
@@ -8,17 +14,16 @@ public class NekoData {
     private String path;
     private Integer offset;
     private Integer interval;
-    private Integer ack;
-    private Integer error;
     private String text;
     private Integer length;
+    private Integer response;
+    private Integer number;
+    private String error;
 
     private Map<String, Object> additionalAttributes;
 
     /**
-     * Leave attributes to null meaning that they are not set
-     *
-     * TODO(cly753):Find a smarter solution?
+     * NULL attributes are not set.
      */
     public NekoData() {
 
@@ -40,20 +45,24 @@ public class NekoData {
         return interval;
     }
 
-    public Integer getAck() {
-        return ack;
-    }
-
-    public Integer getError() {
-        return error;
-    }
-
     public String getText() {
         return text;
     }
 
     public Integer getLength() {
         return length;
+    }
+
+    public Integer getResponse() {
+        return response;
+    }
+
+    public Integer getNumber() {
+        return number;
+    }
+
+    public String getError() {
+        return error;
     }
 
     public void setOpcode(NekoOpcode opcode) {
@@ -64,29 +73,34 @@ public class NekoData {
         this.path = path;
     }
 
-    public void setOffset(int offset) {
+    public void setOffset(Integer offset) {
         this.offset = offset;
     }
 
-    public void setInterval(int interval) {
+    public void setInterval(Integer interval) {
         this.interval = interval;
-    }
-
-    public void setAck(int ack) {
-        this.ack = ack;
-    }
-
-    public void setError(int error) {
-        this.error = error;
     }
 
     public void setText(String text) {
         this.text = text;
     }
 
-    public void setLength(int length) {
+    public void setLength(Integer length) {
         this.length = length;
     }
+
+    public void setResponse(Integer response) {
+        this.response = response;
+    }
+
+    public void setNumber(Integer number) {
+        this.number = number;
+    }
+
+    public void setError(String error) {
+        this.error = error;
+    }
+
 
     @Override
     public String toString() {
@@ -95,7 +109,7 @@ public class NekoData {
                 + ", path='" + path + '\''
                 + ", offset=" + offset
                 + ", interval=" + interval
-                + ", ack=" + ack
+                + ", response=" + response
                 + ", error=" + error
                 + ", text='" + text + '\''
                 + ", length=" + length

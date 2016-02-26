@@ -7,10 +7,12 @@ public enum NekoAttribute {
     PATH(0),
     OFFSET(1),
     INTERVAL(2),
-    ACK(3),
-    ERROR(4),
-    TEXT(5),
-    LENGTH(6);
+    TEXT(3),
+    LENGTH(4),
+
+    RESPONSE(5),
+    NUMBER(6),
+    ERROR(7);
 
     private static final Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
 
