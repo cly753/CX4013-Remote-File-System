@@ -101,7 +101,6 @@ public class NekoData {
         this.error = error;
     }
 
-
     @Override
     public String toString() {
         return "NekoData{"
@@ -109,10 +108,11 @@ public class NekoData {
                 + ", path='" + path + '\''
                 + ", offset=" + offset
                 + ", interval=" + interval
-                + ", response=" + response
-                + ", error=" + error
                 + ", text='" + text + '\''
                 + ", length=" + length
+                + ", response=" + response
+                + ", number=" + number
+                + ", error='" + error + '\''
                 + ", additionalAttributes=" + additionalAttributes
                 + '}';
     }

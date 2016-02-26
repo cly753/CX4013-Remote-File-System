@@ -87,9 +87,9 @@ public class NekoInputStream {
         for (int i = 0; i < INT_LENGTH; i++) {
             val <<= 8;
             if (BIG_ENDIAN) {
-                val |= bytes[i];
+                val |= Byte.toUnsignedInt(bytes[i]);
             } else {
-                val |= bytes[INT_LENGTH - 1 - i];
+                val |= Byte.toUnsignedInt(bytes[INT_LENGTH - 1 - i]);
             }
         }
         log.log(Level.FINE, String.format("%d", val));

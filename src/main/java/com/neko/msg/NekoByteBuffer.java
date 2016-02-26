@@ -71,12 +71,11 @@ public class NekoByteBuffer {
     private static byte[] getBytes(int val) {
         log.log(Level.FINE, String.format("%d", val));
         byte[] ret = new byte[NekoInputStream.INT_LENGTH];
-        int mask = 255;
         for (int i = 0; i < NekoInputStream.INT_LENGTH; i++) {
             if (NekoInputStream.BIG_ENDIAN) {
-                ret[NekoInputStream.INT_LENGTH - 1 - i] = (byte) (val & mask);
+                ret[NekoInputStream.INT_LENGTH - 1 - i] = (byte) val;
             } else {
-                ret[i] = (byte) (val & mask);
+                ret[i] = (byte) val;
             }
             val >>= 8;
         }

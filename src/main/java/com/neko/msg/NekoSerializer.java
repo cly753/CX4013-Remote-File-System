@@ -23,7 +23,7 @@ public class NekoSerializer {
         trySerialize(NekoAttribute.TEXT, data.getText(), byteBuffer);
         trySerialize(NekoAttribute.LENGTH, data.getLength(), byteBuffer);
         trySerialize(NekoAttribute.RESPONSE, data.getResponse(), byteBuffer);
-        trySerialize(NekoAttribute.NUMBER, data.getResponse(), byteBuffer);
+        trySerialize(NekoAttribute.NUMBER, data.getNumber(), byteBuffer);
         trySerialize(NekoAttribute.ERROR, data.getError(), byteBuffer);
 
         return byteBuffer;
@@ -74,10 +74,11 @@ public class NekoSerializer {
                 + sizeInByte(data.getPath())
                 + sizeInByte(data.getOffset())
                 + sizeInByte(data.getInterval())
-                + sizeInByte(data.getResponse())
-                + sizeInByte(data.getError())
                 + sizeInByte(data.getText())
-                + sizeInByte(data.getLength());
+                + sizeInByte(data.getLength())
+                + sizeInByte(data.getResponse())
+                + sizeInByte(data.getNumber())
+                + sizeInByte(data.getError());
     }
 
     /**
