@@ -22,7 +22,6 @@ public class NekoSerializer {
         trySerialize(NekoAttribute.INTERVAL, data.getInterval(), byteBuffer);
         trySerialize(NekoAttribute.TEXT, data.getText(), byteBuffer);
         trySerialize(NekoAttribute.LENGTH, data.getLength(), byteBuffer);
-        trySerialize(NekoAttribute.RESPONSE, data.getResponse(), byteBuffer);
         trySerialize(NekoAttribute.NUMBER, data.getNumber(), byteBuffer);
         trySerialize(NekoAttribute.ERROR, data.getError(), byteBuffer);
 
@@ -76,7 +75,6 @@ public class NekoSerializer {
                 + sizeInByte(data.getInterval())
                 + sizeInByte(data.getText())
                 + sizeInByte(data.getLength())
-                + sizeInByte(data.getResponse())
                 + sizeInByte(data.getNumber())
                 + sizeInByte(data.getError());
     }

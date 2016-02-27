@@ -10,9 +10,8 @@ public enum NekoAttribute {
     TEXT(3),
     LENGTH(4),
 
-    RESPONSE(5),
-    NUMBER(6),
-    ERROR(7);
+    NUMBER(5),
+    ERROR(6);
 
     private static final Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
 

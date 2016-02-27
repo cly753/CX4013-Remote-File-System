@@ -36,13 +36,11 @@ public class MainTest {
     @Test
     public void testNekoDataResponse() {
         NekoOpcode opcode = NekoOpcode.RESULT;
-        int response = 404;
-        String error = "not found";
+        String error = "file not found";
         int number = -1;
 
         NekoData origin = new NekoData();
         origin.setOpcode(opcode);
-        origin.setResponse(response);
         origin.setNumber(number);
         origin.setError(error);
 

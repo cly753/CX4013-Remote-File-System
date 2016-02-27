@@ -40,9 +40,6 @@ public class NekoDeserializer {
                 case LENGTH:
                     deserialized.setLength(in.readInt());
                     break;
-                case RESPONSE:
-                    deserialized.setResponse(in.readInt());
-                    break;
                 case NUMBER:
                     deserialized.setNumber(in.readInt());
                     break;

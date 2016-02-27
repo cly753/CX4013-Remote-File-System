@@ -16,7 +16,6 @@ public class NekoData {
     private Integer interval;
     private String text;
     private Integer length;
-    private Integer response;
     private Integer number;
     private String error;
 
@@ -53,10 +52,6 @@ public class NekoData {
         return length;
     }
 
-    public Integer getResponse() {
-        return response;
-    }
-
     public Integer getNumber() {
         return number;
     }
@@ -89,10 +84,6 @@ public class NekoData {
         this.length = length;
     }
 
-    public void setResponse(Integer response) {
-        this.response = response;
-    }
-
     public void setNumber(Integer number) {
         this.number = number;
     }
@@ -110,7 +101,6 @@ public class NekoData {
                 + ", interval=" + interval
                 + ", text='" + text + '\''
                 + ", length=" + length
-                + ", response=" + response
                 + ", number=" + number
                 + ", error='" + error + '\''
                 + ", additionalAttributes=" + additionalAttributes
