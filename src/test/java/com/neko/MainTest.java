@@ -1,11 +1,11 @@
 package com.neko;
 
-import com.neko.cli.Neko;
+import com.neko.monitor.NekoCallbackClient;
+import com.neko.monitor.NekoCallbackClientTracker;
 import com.neko.msg.*;
 import org.junit.Test;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import static org.junit.Assert.*;
 
 public class MainTest {
 
@@ -30,7 +30,7 @@ public class MainTest {
         NekoDeserializer deserializer = new NekoDeserializer();
         NekoData received = deserializer.deserialize(bytes);
 
-        assert origin.toString().equals(received.toString());
+        assertEquals(origin.toString(), received.toString());
     }
 
     @Test
@@ -56,6 +56,24 @@ public class MainTest {
 
         System.out.println(origin);
         System.out.println(received);
-        assert origin.toString().equals(received.toString());
+        assertEquals(origin.toString(), received.toString());
+    }
+
+    @Test
+    public void testNekoCallbackClientTracker() {
+        byte[] ip = new byte[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255};
+        int port = 8888;
+        String path = "http://www.google.com";
+        String text = "Hello Google";
+        String error = null;
+
+        NekoCallbackClient client = new NekoCallbackClient(ip, port, -1);
+        NekoCallbackClientTracker tracker = new NekoCallbackClientTracker();
+
+        tracker.register(path, client);
+        assertTrue(tracker.isRegistered(path, client));
+        tracker.deregister(path, client);
+        assertFalse(tracker.isRegistered(path, client));
+        tracker.informClients(path, text, error);
     }
 }
