@@ -48,14 +48,10 @@ public class MainTest {
 
         NekoByteBuffer byteBuffer = serializer.serialize(origin);
         byte[] bytes = byteBuffer.toBytes();
-        for (int i = 0; i < bytes.length; i++)
-            System.out.printf("%2d: 0x%02X\n", i, bytes[i]);
 
         NekoDeserializer deserializer = new NekoDeserializer();
         NekoData received = deserializer.deserialize(bytes);
 
-        System.out.println(origin);
-        System.out.println(received);
         assertEquals(origin.toString(), received.toString());
     }
 

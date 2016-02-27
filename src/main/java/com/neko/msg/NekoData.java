@@ -9,14 +9,22 @@ package com.neko.msg;
 import java.util.Map;
 
 public class NekoData {
+    @NekoFieldOpcode
     private NekoOpcode opcode;
 
+    @NekoFieldAttribute(attribute = NekoAttribute.PATH, type = NekoDataType.STRING)
     private String path;
+    @NekoFieldAttribute(attribute = NekoAttribute.OFFSET, type = NekoDataType.INTEGER)
     private Integer offset;
+    @NekoFieldAttribute(attribute = NekoAttribute.INTERVAL, type = NekoDataType.INTEGER)
     private Integer interval;
+    @NekoFieldAttribute(attribute = NekoAttribute.TEXT, type = NekoDataType.STRING)
     private String text;
+    @NekoFieldAttribute(attribute = NekoAttribute.LENGTH, type = NekoDataType.INTEGER)
     private Integer length;
+    @NekoFieldAttribute(attribute = NekoAttribute.NUMBER, type = NekoDataType.INTEGER)
     private Integer number;
+    @NekoFieldAttribute(attribute = NekoAttribute.ERROR, type = NekoDataType.STRING)
     private String error;
 
     private Map<String, Object> additionalAttributes;
