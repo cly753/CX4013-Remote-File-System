@@ -1,6 +1,10 @@
 package com.neko.monitor;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 public class NekoCallbackClientTracker {
@@ -82,8 +86,7 @@ public class NekoCallbackClientTracker {
             NekoCallback callback = iter.next();
             if (!callback.isValid()) {
                 iter.remove();
-            }
-            else {
+            } else {
                 callback.invoke(path, text, error);
             }
         }
@@ -107,13 +110,11 @@ public class NekoCallbackClientTracker {
     private List<NekoCallback> getCallbackList(String path, boolean createIfNull) {
         if (remoteCallbacks.containsKey(path)) {
             return remoteCallbacks.get(path);
-        }
-        else if (createIfNull) {
+        } else if (createIfNull) {
             List<NekoCallback> callbackList = new LinkedList<>();
             remoteCallbacks.put(path, callbackList);
             return callbackList;
-        }
-        else {
+        } else {
             return null;
         }
     }

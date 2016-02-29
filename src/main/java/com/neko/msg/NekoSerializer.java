@@ -27,7 +27,8 @@ public class NekoSerializer {
                     serialize((NekoOpcode) fieldValue, byteBuffer);
                 }
 
-                NekoFieldAttribute annotationAttribute = field.getAnnotation(NekoFieldAttribute.class);
+                NekoFieldAttribute annotationAttribute =
+                        field.getAnnotation(NekoFieldAttribute.class);
                 if (null != annotationAttribute) {
                     field.setAccessible(true);
                     Object fieldValue = field.getType().cast(field.get(data));
@@ -38,9 +39,13 @@ public class NekoSerializer {
                     }
 
                     if (NekoDataType.INTEGER == annotationAttribute.type()) {
-                        serialize(annotationAttribute.attribute(), (Integer) fieldValue, byteBuffer);
+                        serialize(annotationAttribute.attribute(),
+                                (Integer) fieldValue,
+                                byteBuffer);
                     } else if (NekoDataType.STRING == annotationAttribute.type()) {
-                        serialize(annotationAttribute.attribute(), (String) fieldValue, byteBuffer);
+                        serialize(annotationAttribute.attribute(),
+                                (String) fieldValue,
+                                byteBuffer);
                     } else {
                         throw new InputMismatchException();
                     }
@@ -63,7 +68,9 @@ public class NekoSerializer {
     /**
      * Serialize opcode to the byteBuffer:NekoByteBuffer.
      */
-    private void serialize(NekoAttribute attributeName, Integer attribute, NekoByteBuffer byteBuffer) {
+    private void serialize(NekoAttribute attributeName,
+                           Integer attribute,
+                           NekoByteBuffer byteBuffer) {
         byteBuffer.write(attributeName);
         byteBuffer.write(attribute);
     }
@@ -71,14 +78,16 @@ public class NekoSerializer {
     /**
      * Serialize opcode to the byteBuffer:NekoByteBuffer.
      */
-    private void serialize(NekoAttribute attributeName, String attribute, NekoByteBuffer byteBuffer) {
+    private void serialize(NekoAttribute attributeName,
+                           String attribute,
+                           NekoByteBuffer byteBuffer) {
         byteBuffer.write(attributeName);
         byteBuffer.write(attribute);
     }
 
     /**
-     * Get final final size if data:NekoData is converted to bytes.
-     * The size includes the size of attributes annotated with NekoFieldOpcode or NekoFieldAttribute.
+     * Get final final size if data:NekoData is converted to bytes. The size includes the size
+     * of attributes annotated with NekoFieldOpcode or NekoFieldAttribute.
      */
     private static int sizeInByte(NekoData data) {
         int totalSize = 0;
@@ -94,7 +103,8 @@ public class NekoSerializer {
                     totalSize += NekoByteBuffer.sizeInByte((NekoOpcode) fieldValue);
                 }
 
-                NekoFieldAttribute annotationAttribute = field.getAnnotation(NekoFieldAttribute.class);
+                NekoFieldAttribute annotationAttribute =
+                        field.getAnnotation(NekoFieldAttribute.class);
                 if (null != annotationAttribute) {
                     field.setAccessible(true);
                     Object fieldValue = field.getType().cast(field.get(data));
