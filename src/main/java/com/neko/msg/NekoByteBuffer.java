@@ -35,14 +35,14 @@ public class NekoByteBuffer {
 
     public int write(int value) {
         int byteNumber = 0;
-        byteNumber += write(NekoDataType.TYPE_INT); // type
+        byteNumber += write(NekoDataType.INTEGER); // type
         byteNumber += writeBytes(getBytes(value)); // data
         return byteNumber;
     }
 
     public int write(String string) {
         int byteNumber = 0;
-        byteNumber += write(NekoDataType.TYPE_STR); // type
+        byteNumber += write(NekoDataType.STRING); // type
         byteNumber += writeBytes(getBytes(string.length())); // length
         byteNumber += writeBytes(getBytes(string)); // data
         return byteNumber;

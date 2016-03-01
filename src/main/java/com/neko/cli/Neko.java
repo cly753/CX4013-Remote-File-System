@@ -71,32 +71,33 @@ public class Neko {
 
         String command = args[0];
 
-        String[] commandArgs = new String[args.length-1];
+        String[] commandArgs = new String[args.length - 1];
         System.arraycopy(args, 1, commandArgs, 0, commandArgs.length);
 
         switch (command) {
             case "read":
                 read(commandArgs);
-                System.exit(0);
+                break;
             case "insert":
                 insert(commandArgs);
-                System.exit(0);
+                break;
             case "monitor":
                 monitor(commandArgs);
-                System.exit(0);
+                break;
             case "copy":
                 String copyFilePath = getFilePath(commandArgs);
                 System.out.println("file path: " + copyFilePath);
                 // TODO(andyccs): copy logic here
-                System.exit(0);
+                break;
             case "count":
                 String countFilePath = getFilePath(commandArgs);
                 System.out.println("file path: " + countFilePath);
                 // TODO(andyccs): count logic here
-                System.exit(0);
+                break;
+            default:
+                showHelps();
+                break;
         }
-
-        showHelps();
     }
 
     private static void read(String[] commandArgs) {
@@ -179,16 +180,16 @@ public class Neko {
         System.out.println("");
     }
 
+    private static void showHelps(Options options, String command) {
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("neko " + command + " [ARGS]", options);
+    }
+
     private static void showHelpCopy() {
         System.out.println("usage: neko copy <path>");
     }
 
     private static void showHelpCount() {
         System.out.println("usage: neko count <path>");
-    }
-
-    private static void showHelps(Options options, String command) {
-        HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("neko " + command + " [ARGS]", options);
     }
 }

@@ -1,11 +1,17 @@
 package com.neko;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import com.neko.monitor.NekoCallbackClient;
 import com.neko.monitor.NekoCallbackClientTracker;
-import com.neko.msg.*;
+import com.neko.msg.NekoByteBuffer;
+import com.neko.msg.NekoData;
+import com.neko.msg.NekoDeserializer;
+import com.neko.msg.NekoOpcode;
+import com.neko.msg.NekoSerializer;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 public class MainTest {
 
@@ -48,14 +54,10 @@ public class MainTest {
 
         NekoByteBuffer byteBuffer = serializer.serialize(origin);
         byte[] bytes = byteBuffer.toBytes();
-        for (int i = 0; i < bytes.length; i++)
-            System.out.printf("%2d: 0x%02X\n", i, bytes[i]);
 
         NekoDeserializer deserializer = new NekoDeserializer();
         NekoData received = deserializer.deserialize(bytes);
 
-        System.out.println(origin);
-        System.out.println(received);
         assertEquals(origin.toString(), received.toString());
     }
 
@@ -64,8 +66,6 @@ public class MainTest {
         byte[] ip = new byte[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255};
         int port = 8888;
         String path = "http://www.google.com";
-        String text = "Hello Google";
-        String error = null;
 
         NekoCallbackClient client = new NekoCallbackClient(ip, port, -1);
         NekoCallbackClientTracker tracker = new NekoCallbackClientTracker();
@@ -74,6 +74,9 @@ public class MainTest {
         assertTrue(tracker.isRegistered(path, client));
         tracker.deregister(path, client);
         assertFalse(tracker.isRegistered(path, client));
+
+        String text = "Hello Google";
+        String error = null;
         tracker.informClients(path, text, error);
     }
 }

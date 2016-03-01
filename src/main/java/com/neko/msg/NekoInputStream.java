@@ -48,7 +48,7 @@ public class NekoInputStream {
 
     public int readInt() {
         NekoDataType type = readDataType();
-        if (type != NekoDataType.TYPE_INT) {
+        if (type != NekoDataType.INTEGER) {
             throw new InputMismatchException();
         }
         return convertInt(readBytes(INT_LENGTH));
@@ -56,7 +56,7 @@ public class NekoInputStream {
 
     public String readString() {
         NekoDataType type = readDataType();
-        if (type != NekoDataType.TYPE_STR) {
+        if (type != NekoDataType.STRING) {
             throw new InputMismatchException();
         }
         int len = convertInt(readBytes(INT_LENGTH));

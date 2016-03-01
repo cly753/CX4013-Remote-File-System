@@ -1,5 +1,8 @@
 package com.neko.msg;
 
+import java.lang.reflect.Field;
+import java.util.InputMismatchException;
+
 public class NekoSerializer {
 
     public NekoSerializer() {
@@ -8,22 +11,49 @@ public class NekoSerializer {
 
     /**
      * Serialize data:NekoData to the byteBuffer:NekoBytebuffer.
-     * It will serialize all attributes of NekoData.
-     *
-     * TODO
-     * Hardcoded all attributes for now.
+     * It will serialize attributes annotated with NekoFieldOpcode or NekoFieldAttribute.
      */
     public NekoByteBuffer serialize(NekoData data) {
         NekoByteBuffer byteBuffer = new NekoByteBuffer(NekoSerializer.sizeInByte(data));
 
-        serialize(data.getOpcode(), byteBuffer);
-        trySerialize(NekoAttribute.PATH, data.getPath(), byteBuffer);
-        trySerialize(NekoAttribute.OFFSET, data.getOffset(), byteBuffer);
-        trySerialize(NekoAttribute.INTERVAL, data.getInterval(), byteBuffer);
-        trySerialize(NekoAttribute.TEXT, data.getText(), byteBuffer);
-        trySerialize(NekoAttribute.LENGTH, data.getLength(), byteBuffer);
-        trySerialize(NekoAttribute.NUMBER, data.getNumber(), byteBuffer);
-        trySerialize(NekoAttribute.ERROR, data.getError(), byteBuffer);
+        try {
+            Class dataClass = data.getClass();
+            Field[] attributes = dataClass.getDeclaredFields();
+            for (Field field : attributes) {
+                NekoFieldOpcode annotationOpcode = field.getAnnotation(NekoFieldOpcode.class);
+                if (null != annotationOpcode) {
+                    field.setAccessible(true);
+                    Object fieldValue = field.getType().cast(field.get(data));
+                    serialize((NekoOpcode) fieldValue, byteBuffer);
+                }
+
+                NekoFieldAttribute annotationAttribute =
+                        field.getAnnotation(NekoFieldAttribute.class);
+                if (null != annotationAttribute) {
+                    field.setAccessible(true);
+                    Object fieldValue = field.getType().cast(field.get(data));
+
+                    // Skip if the attribute is null.
+                    if (null == fieldValue) {
+                        continue;
+                    }
+
+                    if (NekoDataType.INTEGER == annotationAttribute.type()) {
+                        serialize(annotationAttribute.attribute(),
+                                (Integer) fieldValue,
+                                byteBuffer);
+                    } else if (NekoDataType.STRING == annotationAttribute.type()) {
+                        serialize(annotationAttribute.attribute(),
+                                (String) fieldValue,
+                                byteBuffer);
+                    } else {
+                        throw new InputMismatchException();
+                    }
+                }
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
 
         return byteBuffer;
     }
@@ -36,47 +66,67 @@ public class NekoSerializer {
     }
 
     /**
-     * Try to serialize an attribute.
-     * If the attribute is null, it will do nothing.
-     * Otherwise, it will serialize the attribute's name and data
-     * to the byteBuffer:NekoByteBuffer.
+     * Serialize opcode to the byteBuffer:NekoByteBuffer.
      */
-    private void trySerialize(NekoAttribute attributeName, Integer attribute, NekoByteBuffer byteBuffer) {
-        if (null != attribute) {
-            byteBuffer.write(attributeName);
-            byteBuffer.write(attribute);
-        }
+    private void serialize(NekoAttribute attributeName,
+                           Integer attribute,
+                           NekoByteBuffer byteBuffer) {
+        byteBuffer.write(attributeName);
+        byteBuffer.write(attribute);
     }
 
     /**
-     * Try to serialize an attribute.
-     * If the attribute is null, it will do nothing.
-     * Otherwise, it will serialize the attribute's name and data
-     * to the byteBuffer:NekoByteBuffer.
+     * Serialize opcode to the byteBuffer:NekoByteBuffer.
      */
-    private void trySerialize(NekoAttribute attributeName, String attribute, NekoByteBuffer byteBuffer) {
-        if (null != attribute) {
-            byteBuffer.write(attributeName);
-            byteBuffer.write(attribute);
-        }
+    private void serialize(NekoAttribute attributeName,
+                           String attribute,
+                           NekoByteBuffer byteBuffer) {
+        byteBuffer.write(attributeName);
+        byteBuffer.write(attribute);
     }
 
     /**
-     * Get final final size if data:NekoData is converted to bytes.
-     * The size includes the size of NekoOpcode and all attributes.
-     *
-     * TODO
-     * Hardcoded all attributes for now.
+     * Get final final size if data:NekoData is converted to bytes. The size includes the size
+     * of attributes annotated with NekoFieldOpcode or NekoFieldAttribute.
      */
     private static int sizeInByte(NekoData data) {
-        return NekoByteBuffer.sizeInByte(data.getOpcode())
-                + sizeInByte(data.getPath())
-                + sizeInByte(data.getOffset())
-                + sizeInByte(data.getInterval())
-                + sizeInByte(data.getText())
-                + sizeInByte(data.getLength())
-                + sizeInByte(data.getNumber())
-                + sizeInByte(data.getError());
+        int totalSize = 0;
+
+        try {
+            Class dataClass = data.getClass();
+            Field[] attributes = dataClass.getDeclaredFields();
+            for (Field field : attributes) {
+                NekoFieldOpcode annotationOpcode = field.getAnnotation(NekoFieldOpcode.class);
+                if (null != annotationOpcode) {
+                    field.setAccessible(true);
+                    Object fieldValue = field.getType().cast(field.get(data));
+                    totalSize += NekoByteBuffer.sizeInByte((NekoOpcode) fieldValue);
+                }
+
+                NekoFieldAttribute annotationAttribute =
+                        field.getAnnotation(NekoFieldAttribute.class);
+                if (null != annotationAttribute) {
+                    field.setAccessible(true);
+                    Object fieldValue = field.getType().cast(field.get(data));
+                    if (null == fieldValue) {
+                        continue;
+                    }
+                    int size;
+                    if (NekoDataType.INTEGER == annotationAttribute.type()) {
+                        size = sizeInByte((Integer) fieldValue);
+                    } else if (NekoDataType.STRING == annotationAttribute.type()) {
+                        size = sizeInByte((String) fieldValue);
+                    } else {
+                        throw new InputMismatchException();
+                    }
+                    totalSize += size;
+                }
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        return totalSize;
     }
 
     /**
@@ -91,7 +141,6 @@ public class NekoSerializer {
         } else {
             return 1 + NekoByteBuffer.sizeInByte(attribute);
         }
-
     }
 
     /**

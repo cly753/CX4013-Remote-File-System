@@ -4,8 +4,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public enum NekoDataType {
-    TYPE_INT(0),
-    TYPE_STR(1);
+    INTEGER(0),
+    STRING(1);
 
     private static final Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
 
