@@ -60,6 +60,10 @@ public class NekoByteBuffer {
         return writeBytes(type.toByte());
     }
 
+    public int writeEOF() {
+        return writeBytes(NekoIOConstants.EOF);
+    }
+
     public byte[] toBytes() {
         return data; // return reference
     }
@@ -70,10 +74,10 @@ public class NekoByteBuffer {
      */
     private static byte[] getBytes(int val) {
         log.log(Level.FINE, String.format("%d", val));
-        byte[] ret = new byte[NekoInputStream.INT_LENGTH];
-        for (int i = 0; i < NekoInputStream.INT_LENGTH; i++) {
-            if (NekoInputStream.BIG_ENDIAN) {
-                ret[NekoInputStream.INT_LENGTH - 1 - i] = (byte) val;
+        byte[] ret = new byte[NekoIOConstants.INT_LENGTH];
+        for (int i = 0; i < NekoIOConstants.INT_LENGTH; i++) {
+            if (NekoIOConstants.BIG_ENDIAN) {
+                ret[NekoIOConstants.INT_LENGTH - 1 - i] = (byte) val;
             } else {
                 ret[i] = (byte) val;
             }
@@ -92,11 +96,11 @@ public class NekoByteBuffer {
     }
 
     public static int sizeInByte(int val) {
-        return 1 + 4; // 1 byte for type + 4 byte for data
+        return sizeInByte(NekoDataType.INTEGER) + NekoIOConstants.INT_LENGTH; // 1 byte for type + 4 byte for data
     }
 
     public static int sizeInByte(String string) {
-        return 1 + 4 + string.length(); // 1 type + 4 byte for length + data
+        return sizeInByte(NekoDataType.STRING) + NekoIOConstants.INT_LENGTH + string.length(); // 1 type + 4 byte for length + data
     }
 
     public static int sizeInByte(NekoOpcode opcode) {
@@ -108,6 +112,10 @@ public class NekoByteBuffer {
     }
 
     public static int sizeInByte(NekoDataType dataType) {
+        return 1;
+    }
+
+    public static int sizeEOF() {
         return 1;
     }
 }

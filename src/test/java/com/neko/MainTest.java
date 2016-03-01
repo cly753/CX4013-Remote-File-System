@@ -79,4 +79,24 @@ public class MainTest {
         String error = null;
         tracker.informClients(path, text, error);
     }
+
+    @Test
+    public void testEOF() {
+        NekoData request = new NekoData();
+        request.setOpcode(NekoOpcode.READ);
+        request.setPath("./UDPServer.java");
+        request.setOffset(1);
+        request.setLength(10);
+
+        NekoSerializer serializer = new NekoSerializer();
+        NekoDeserializer deserializer = new NekoDeserializer();
+
+        byte[] bytes = serializer.serialize(request).toBytes();
+        byte[] longerBytes = new byte[bytes.length + 100];
+        System.arraycopy(bytes, 0, longerBytes, 0, bytes.length);
+
+        NekoData reply = deserializer.deserialize(longerBytes);
+
+        assertEquals(request.toString(), reply.toString());
+    }
 }

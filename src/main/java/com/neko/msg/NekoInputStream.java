@@ -6,14 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class NekoInputStream {
-    private static final Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
-
-    public static final int INT_LENGTH = 4;
-
-    /**
-     * Big Endian: MSB at lowest memory address
-     */
-    public static final boolean BIG_ENDIAN = true;
+    private static final Logger log = Logger.getLogger(NekoInputStream.class.getName());
 
     private byte[] data;
     private int cur;
@@ -51,7 +44,7 @@ public class NekoInputStream {
         if (type != NekoDataType.INTEGER) {
             throw new InputMismatchException();
         }
-        return convertInt(readBytes(INT_LENGTH));
+        return convertInt(readBytes(NekoIOConstants.INT_LENGTH));
     }
 
     public String readString() {
@@ -59,7 +52,7 @@ public class NekoInputStream {
         if (type != NekoDataType.STRING) {
             throw new InputMismatchException();
         }
-        int len = convertInt(readBytes(INT_LENGTH));
+        int len = convertInt(readBytes(NekoIOConstants.INT_LENGTH));
         return convertString(readBytes(len));
     }
 
@@ -76,20 +69,23 @@ public class NekoInputStream {
     }
 
     public boolean hasNext() {
-        return cur != data.length;
+        if (cur >= data.length) {
+            throw new InputMismatchException();
+        }
+        return data[cur] != NekoIOConstants.EOF;
     }
 
     public static int convertInt(byte[] bytes) {
-        if (bytes.length != INT_LENGTH) {
+        if (bytes.length != NekoIOConstants.INT_LENGTH) {
             throw new InputMismatchException();
         }
         int val = 0;
-        for (int i = 0; i < INT_LENGTH; i++) {
+        for (int i = 0; i < NekoIOConstants.INT_LENGTH; i++) {
             val <<= 8;
-            if (BIG_ENDIAN) {
+            if (NekoIOConstants.BIG_ENDIAN) {
                 val |= Byte.toUnsignedInt(bytes[i]);
             } else {
-                val |= Byte.toUnsignedInt(bytes[INT_LENGTH - 1 - i]);
+                val |= Byte.toUnsignedInt(bytes[NekoIOConstants.INT_LENGTH - 1 - i]);
             }
         }
         log.log(Level.FINE, String.format("%d", val));

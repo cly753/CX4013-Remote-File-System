@@ -51,6 +51,8 @@ public class NekoSerializer {
                     }
                 }
             }
+
+            byteBuffer.writeEOF();
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -122,6 +124,8 @@ public class NekoSerializer {
                     totalSize += size;
                 }
             }
+
+            totalSize += NekoByteBuffer.sizeEOF();
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
