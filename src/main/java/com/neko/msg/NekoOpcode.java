@@ -9,7 +9,8 @@ public enum NekoOpcode {
     MONITOR(2),
     COPY(3),
     COUNT(4),
-    RESULT(5);
+    RESULT(5),
+    ERROR(6);
 
     private static final Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
 
