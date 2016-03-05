@@ -1,5 +1,7 @@
 package com.neko.cli;
 
+import static com.neko.msg.NekoOpcode.COPY;
+import static com.neko.msg.NekoOpcode.COUNT;
 import static com.neko.msg.NekoOpcode.INSERT;
 import static com.neko.msg.NekoOpcode.READ;
 
@@ -222,10 +224,18 @@ public class Neko {
 
             log.log(Level.INFO, "file path: " + filePath);
 
-            // TODO(andyccs): copy logic here
+            NekoData request = new NekoData();
+            request.setOpcode(COPY);
+            request.setPath(filePath);
+
+            String respond = sendBytes(request);
+            System.out.println(respond);
         } catch (ParseException exception) {
             log.log(Level.WARNING, "Error: " + exception.getMessage());
-            showHelps(monitorOptions, "copy");
+            showHelps(copyOptions, "copy");
+            System.exit(-1);
+        } catch (IOException exception) {
+            log.log(Level.WARNING, "Error: " + exception.getMessage());
             System.exit(-1);
         }
     }
@@ -240,10 +250,18 @@ public class Neko {
 
             log.log(Level.INFO, "file path: " + filePath);
 
-            // TODO(andyccs): count logic here
+            NekoData request = new NekoData();
+            request.setOpcode(COUNT);
+            request.setPath(filePath);
+
+            String respond = sendBytes(request);
+            System.out.println(respond);
         } catch (ParseException exception) {
             log.log(Level.WARNING, "Error: " + exception.getMessage());
-            showHelps(monitorOptions, "count");
+            showHelps(countOptions, "count");
+            System.exit(-1);
+        } catch (IOException exception) {
+            log.log(Level.WARNING, "Error: " + exception.getMessage());
             System.exit(-1);
         }
     }
