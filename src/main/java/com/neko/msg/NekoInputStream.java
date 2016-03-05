@@ -42,7 +42,8 @@ public class NekoInputStream {
     public int readInt() {
         NekoDataType type = readDataType();
         if (type != NekoDataType.INTEGER) {
-            throw new InputMismatchException("Try to read Integer while NekoDataType is not INTEGER");
+            throw new InputMismatchException(
+                    "Try to read Integer while NekoDataType is not INTEGER");
         }
         return convertInt(readBytes(NekoIOConstants.INT_LENGTH));
     }
@@ -77,7 +78,8 @@ public class NekoInputStream {
 
     public static int convertInt(byte[] bytes) {
         if (bytes.length != NekoIOConstants.INT_LENGTH) {
-            throw new InputMismatchException("Number of bytes provided does not match NekoIOConstants.INT_LENGTH");
+            throw new InputMismatchException(
+                    "Number of bytes provided does not match NekoIOConstants.INT_LENGTH");
         }
         int val = 0;
         for (int i = 0; i < NekoIOConstants.INT_LENGTH; i++) {
