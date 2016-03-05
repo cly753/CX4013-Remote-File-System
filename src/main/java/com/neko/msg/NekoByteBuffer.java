@@ -73,7 +73,7 @@ public class NekoByteBuffer {
      * It does not add extra attributes such as integer type.
      */
     private static byte[] getBytes(int val) {
-        log.log(Level.FINE, String.format("%d", val));
+        log.log(Level.FINEST, String.format("%d", val));
         byte[] ret = new byte[NekoIOConstants.INT_LENGTH];
         for (int i = 0; i < NekoIOConstants.INT_LENGTH; i++) {
             if (NekoIOConstants.BIG_ENDIAN) {
@@ -91,7 +91,7 @@ public class NekoByteBuffer {
      * It does not add extra attributes such as string type and string length.
      */
     private static byte[] getBytes(String string) {
-        log.log(Level.FINE, String.format("%d %s", string.length(), string));
+        log.log(Level.FINEST, String.format("%d %s", string.length(), string));
         return string.getBytes();
     }
 

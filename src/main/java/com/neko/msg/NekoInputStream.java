@@ -21,7 +21,7 @@ public class NekoInputStream {
             throw new InputMismatchException("No enough bytes to read");
         }
         byte ret = data[cur];
-        log.log(Level.FINE, String.format("data[%d]=0x%02X", cur, ret));
+        log.log(Level.FINEST, String.format("data[%d]=0x%02X", cur, ret));
         cur++;
         return ret;
     }
@@ -33,7 +33,7 @@ public class NekoInputStream {
         byte[] ret = Arrays.copyOfRange(data, cur, cur + length);
 
         for (int i = 0; i < ret.length; i++) {
-            log.log(Level.FINE, String.format("ret[%d]=0x%02X", i, ret[i]));
+            log.log(Level.FINEST, String.format("ret[%d]=0x%02X", i, ret[i]));
         }
         cur += length;
         return ret;
@@ -88,12 +88,12 @@ public class NekoInputStream {
                 val |= Byte.toUnsignedInt(bytes[NekoIOConstants.INT_LENGTH - 1 - i]);
             }
         }
-        log.log(Level.FINE, String.format("%d", val));
+        log.log(Level.FINEST, String.format("%d", val));
         return val;
     }
 
     public static String convertString(byte[] bytes) {
-        log.log(Level.FINE, String.format("%d %s", new String(bytes).length(), new String(bytes)));
+        log.log(Level.FINEST, String.format("%d %s", new String(bytes).length(), new String(bytes)));
         return new String(bytes);
     }
 }

@@ -17,7 +17,7 @@ public enum NekoOpcode {
     private static final NekoOpcode[] opcode;
 
     public static NekoOpcode getOpcode(byte op) {
-        log.log(Level.FINE, String.format("0x%02X", op));
+        log.log(Level.FINEST, String.format("0x%02X", op));
         return opcode[op];
     }
 
@@ -36,7 +36,7 @@ public enum NekoOpcode {
     }
 
     public byte toByte() {
-        log.log(Level.FINE, String.format("0x%02X", code));
+        log.log(Level.FINEST, String.format("0x%02X", code));
         return code;
     }
 }

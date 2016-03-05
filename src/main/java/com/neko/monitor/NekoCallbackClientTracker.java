@@ -5,10 +5,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class NekoCallbackClientTracker {
-    private static final Logger log = Logger.getLogger(NekoCallbackServer.class.getName());
+    private static final Logger log = Logger.getLogger(NekoCallbackClientTracker.class.getName());
 
     private Map<String, List<NekoCallback>> remoteCallbacks;
 
@@ -84,9 +85,12 @@ public class NekoCallbackClientTracker {
         Iterator<NekoCallback> iter = callbackList.iterator();
         while (iter.hasNext()) {
             NekoCallback callback = iter.next();
+            log.log(Level.FINE, "checking " + callback.toString());
             if (!callback.isValid()) {
+                log.log(Level.FINE, "not valid");
                 iter.remove();
             } else {
+                log.log(Level.FINE, "valid, invoking");
                 callback.invoke(path, text, error);
             }
         }

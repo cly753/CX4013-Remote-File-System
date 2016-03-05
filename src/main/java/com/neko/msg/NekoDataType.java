@@ -12,7 +12,7 @@ public enum NekoDataType {
     private static final NekoDataType[] type;
 
     public static NekoDataType getType(byte bByte) {
-        log.log(Level.FINE, String.format("0x%02X", bByte));
+        log.log(Level.FINEST, String.format("0x%02X", bByte));
         return type[bByte];
     }
 
@@ -31,7 +31,7 @@ public enum NekoDataType {
     }
 
     public byte toByte() {
-        log.log(Level.FINE, String.format("0x%02X", code));
+        log.log(Level.FINEST, String.format("0x%02X", code));
         return code;
     }
 }

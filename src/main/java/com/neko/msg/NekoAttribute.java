@@ -18,7 +18,7 @@ public enum NekoAttribute {
     private static final NekoAttribute[] attributes;
 
     public static NekoAttribute getAttribute(byte bByte) {
-        log.log(Level.FINE, String.format("0x%02X", bByte));
+        log.log(Level.FINEST, String.format("0x%02X", bByte));
         return attributes[bByte];
     }
 
@@ -37,7 +37,7 @@ public enum NekoAttribute {
     }
 
     public byte toByte() {
-        log.log(Level.FINE, String.format("%s 0x%02X", this, code));
+        log.log(Level.FINEST, String.format("%s 0x%02X", this, code));
         return code;
     }
 }
