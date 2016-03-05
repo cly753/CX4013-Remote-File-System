@@ -21,10 +21,10 @@ public class NekoCallbackClientTracker {
      */
     public void register(String path, NekoCallback callback) {
         List<NekoCallback> callbackList = getCallbackList(path, true);
-        for (NekoCallback cb : callbackList) {
-            if (cb.equals(callback)) {
-                cb = callback;
-                return;
+        Iterator<NekoCallback> iter = callbackList.iterator();
+        while (iter.hasNext()) {
+            if (iter.next().equals(callback)) {
+                iter.remove();
             }
         }
         callbackList.add(callback);
