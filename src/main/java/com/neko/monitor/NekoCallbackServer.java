@@ -49,6 +49,7 @@ public class NekoCallbackServer {
             log.log(Level.FINE, "NekoCallbackServer started.");
 
             // when server only listens for {interval} milliseconds
+            System.out.println("interval = " + interval);
             if (interval > 0) {
                 final Thread serverThread = Thread.currentThread();
                 final DatagramSocket finalSocket = socket;
@@ -67,6 +68,7 @@ public class NekoCallbackServer {
                             e.printStackTrace();
                         }
                         if (!finalSocket.isClosed()) {
+                            log.log(Level.FINE, "close finalSocket");
                             finalSocket.close();
                         }
                     }
@@ -122,7 +124,7 @@ public class NekoCallbackServer {
         // some validation
         //
 
-        if (null != callback) {
+        if (null != callback && callback.isValid()) {
             callback.invoke(request.getPath(), request.getText(), request.getError());
         }
     }
