@@ -2,8 +2,12 @@ package com.neko.monitor;
 
 import com.neko.msg.NekoData;
 import com.neko.msg.NekoOpcode;
+import com.neko.msg.NekoSerializer;
 
+import java.io.IOException;
+import java.net.*;
 import java.util.Arrays;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -11,9 +15,9 @@ import java.util.logging.Logger;
  * which is listening to the update of path at server
  */
 public class NekoCallbackClient implements NekoCallback {
-    private static final Logger log = Logger.getLogger(NekoCallbackServer.class.getName());
+    private static final Logger log = Logger.getLogger(NekoCallbackClient.class.getName());
 
-    private byte[] ip;
+    private InetAddress host;
     private int port;
 
     /**
@@ -21,8 +25,14 @@ public class NekoCallbackClient implements NekoCallback {
      */
     private long validUntil;
 
-    public NekoCallbackClient(byte[] ip, int port, long validUntil) {
-        this.ip = ip;
+    public NekoCallbackClient(byte[] host, int port, long validUntil) throws UnknownHostException {
+        this.host = InetAddress.getByAddress(host);
+        this.port = port;
+        this.validUntil = validUntil;
+    }
+
+    public NekoCallbackClient(String host, int port, long validUntil) throws UnknownHostException {
+        this.host = InetAddress.getByName(host);
         this.port = port;
         this.validUntil = validUntil;
     }
@@ -52,6 +62,17 @@ public class NekoCallbackClient implements NekoCallback {
         // and
         // perform retransmit etc.
         //
+
+        log.log(Level.FINE, "sending request to " + host.getCanonicalHostName() + ":" + port);
+        try {
+            NekoSerializer serializer = new NekoSerializer();
+            byte[] requestBytes = serializer.serialize(request).toBytes();
+            DatagramSocket socket = new DatagramSocket();
+            DatagramPacket requestPacket = new DatagramPacket(requestBytes, requestBytes.length, host, port);
+            socket.send(requestPacket);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -59,7 +80,7 @@ public class NekoCallbackClient implements NekoCallback {
      */
     @Override
     public boolean isValid() {
-        return System.currentTimeMillis() > validUntil;
+        return validUntil > System.currentTimeMillis();
     }
 
     /**
@@ -79,15 +100,25 @@ public class NekoCallbackClient implements NekoCallback {
         if (port != that.port) {
             return false;
         }
-        return Arrays.equals(ip, that.ip);
+
+        return Arrays.equals(host.getAddress(), that.host.getAddress());
     }
 
-    public byte[] getIp() {
-        return ip;
+    @Override
+    public java.lang.String toString() {
+        return "NekoCallbackClient{"
+                + "host=" + host.getCanonicalHostName()
+                + ", port=" + port
+                + ", validUntil=" + validUntil
+                + '}';
     }
 
-    public void setIp(byte[] ip) {
-        this.ip = ip;
+    public InetAddress getHost() {
+        return host;
+    }
+
+    public void setIp(InetAddress host) {
+        this.host = host;
     }
 
     public int getPort() {
