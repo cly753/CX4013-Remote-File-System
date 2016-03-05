@@ -58,8 +58,7 @@ public class NekoCallbackClient implements NekoCallback {
      */
     private void invokeRemote(NekoData request) {
         //
-        // send to client
-        // and
+        // TODO
         // perform retransmit etc.
         //
 
