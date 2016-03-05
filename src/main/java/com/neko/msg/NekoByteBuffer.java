@@ -17,7 +17,7 @@ public class NekoByteBuffer {
 
     private int writeBytes(byte bByte) {
         if (1 + cur > data.length) {
-            throw new InputMismatchException();
+            throw new InputMismatchException("Internal byte array is full");
         }
         data[cur] = bByte;
         cur++;
@@ -26,7 +26,7 @@ public class NekoByteBuffer {
 
     private int writeBytes(byte[] bytes) {
         if (bytes.length + cur > data.length) {
-            throw new InputMismatchException();
+            throw new InputMismatchException("Internal byte array is full");
         }
         System.arraycopy(bytes, 0, data, cur, bytes.length);
         cur += bytes.length;

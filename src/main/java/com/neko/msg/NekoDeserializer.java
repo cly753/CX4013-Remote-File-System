@@ -47,7 +47,7 @@ public class NekoDeserializer {
                     deserialized.setError(in.readString());
                     break;
                 default:
-                    throw new InputMismatchException();
+                    throw new InputMismatchException("Unknown NekoAttribute");
             }
         }
 
