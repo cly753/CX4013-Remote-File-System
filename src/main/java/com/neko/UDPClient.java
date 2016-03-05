@@ -1,5 +1,7 @@
 package com.neko;
 
+import static com.neko.msg.NekoOpcode.COPY;
+
 import com.neko.msg.NekoData;
 import com.neko.msg.NekoDeserializer;
 import com.neko.msg.NekoSerializer;
@@ -7,8 +9,6 @@ import com.neko.msg.NekoSerializer;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-
-import static com.neko.msg.NekoOpcode.*;
 
 public class UDPClient {
 
@@ -42,7 +42,7 @@ public class UDPClient {
 //                byte[] byteMessage = input.getBytes();
 //
 //                DatagramPacket request =
-//                        new DatagramPacket(byteMessage, byteMessage.length, host, SERVER_PORT);
+//                        new DatagramPacket(byteMessage, byteMessage.length, host, port);
 //
 //                socket.send(request); //send packet using socket method
 //
