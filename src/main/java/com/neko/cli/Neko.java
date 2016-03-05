@@ -20,8 +20,11 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Neko {
+    private static final Logger log = Logger.getLogger(Neko.class.getName());
 
     private static Option readOffsetOption = OptionBuilder.withLongOpt("offset")
             .withDescription("read bytes starting from this offset")
@@ -58,24 +61,38 @@ public class Neko {
             .withType(Integer.class)
             .create();
 
-    private static Option help = new Option("help", "print this message");
+    private static Option help = new Option("h", "help", false, "print this message");
+    private static Option debug = new Option("d", "debug", false, "print debug message");
+    private static Option verbose = new Option("v", "verbose", false, "print verbose message");
 
     private static Options options = new Options();
     private static Options readOptions = new Options();
     private static Options insertOptions = new Options();
     private static Options monitorOptions = new Options();
 
-    public static void main(String[] args) {
+    static {
         options.addOption(help);
+        options.addOption(debug);
+        options.addOption(verbose);
 
         readOptions.addOption(readOffsetOption);
         readOptions.addOption(byteOption);
+        readOptions.addOption(debug);
+        readOptions.addOption(verbose);
 
         insertOptions.addOption(insertOffsetOption);
         insertOptions.addOption(textOption);
+        insertOptions.addOption(debug);
+        insertOptions.addOption(verbose);
 
         monitorOptions.addOption(timeOption);
+        monitorOptions.addOption(debug);
+        monitorOptions.addOption(verbose);
 
+        log.setLevel(Level.WARNING);
+    }
+
+    public static void main(String[] args) {
         if (args.length == 0) {
             showHelps();
             System.exit(-1);
@@ -116,12 +133,13 @@ public class Neko {
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine line = parser.parse(readOptions, commandArgs);
+            setLoggerLevel(line);
 
             String filePath = getFilePath(line.getArgs());
 
-            System.out.println("file path: " + filePath);
-            System.out.println("offset: " + Integer.parseInt(line.getOptionValue("o")));
-            System.out.println("byte: " + Integer.parseInt(line.getOptionValue("b")));
+            log.log(Level.INFO, "file path: " + filePath);
+            log.log(Level.INFO, "offset: " + Integer.parseInt(line.getOptionValue("o")));
+            log.log(Level.INFO, "byte: " + Integer.parseInt(line.getOptionValue("b")));
 
             NekoData request = new NekoData();
             request.setOpcode(READ);
@@ -132,11 +150,11 @@ public class Neko {
             String respond = sendBytes(request);
             System.out.println(respond);
         } catch (ParseException exception) {
-            System.err.println("Error: " + exception.getMessage());
+            log.log(Level.WARNING, "Error: " + exception.getMessage());
             showHelps(readOptions, "read");
             System.exit(-1);
         } catch (IOException exception) {
-            System.err.println("Error: " + exception.getMessage());
+            log.log(Level.WARNING, "Error: " + exception.getMessage());
             System.exit(-1);
         }
     }
@@ -145,27 +163,28 @@ public class Neko {
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine line = parser.parse(insertOptions, commandArgs);
+            setLoggerLevel(line);
 
             String filePath = getFilePath(line.getArgs());
 
-            System.out.println("file path: " + filePath);
-            System.out.println("offset: " + Integer.parseInt(line.getOptionValue("o")));
-            System.out.println("text: " + line.getOptionValue("text"));
+            log.log(Level.INFO, "file path: " + filePath);
+            log.log(Level.INFO, "offset: " + Integer.parseInt(line.getOptionValue("o")));
+            log.log(Level.INFO, "text: " + line.getOptionValue("text"));
 
             NekoData request = new NekoData();
             request.setOpcode(INSERT);
             request.setPath(filePath);
             request.setOffset(Integer.parseInt(line.getOptionValue("o")));
             request.setText(StringEscapeUtils.unescapeJava(line.getOptionValue("text")));
-            
+
             String respond = sendBytes(request);
             System.out.println(respond);
         } catch (ParseException exception) {
-            System.err.println("Error: " + exception.getMessage());
+            log.log(Level.WARNING, "Error: " + exception.getMessage());
             showHelps(insertOptions, "insert");
             System.exit(-1);
         } catch (IOException exception) {
-            System.err.println("Error: " + exception.getMessage());
+            log.log(Level.WARNING, "Error: " + exception.getMessage());
             System.exit(-1);
         }
     }
@@ -174,15 +193,16 @@ public class Neko {
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine line = parser.parse(monitorOptions, commandArgs);
+            setLoggerLevel(line);
 
             String filePath = getFilePath(line.getArgs());
 
             // TODO(andyccs): monitor logic here
-            System.out.println("file path: " + filePath);
-            System.out.println("time: " + Integer.parseInt(line.getOptionValue("time")));
+            log.log(Level.INFO, "file path: " + filePath);
+            log.log(Level.INFO, "time: " + Integer.parseInt(line.getOptionValue("time")));
 
         } catch (ParseException exp) {
-            System.err.println("Error: " + exp.getMessage());
+            log.log(Level.WARNING, "Error: " + exp.getMessage());
             showHelps(monitorOptions, "monitor");
             System.exit(-1);
         }
@@ -196,9 +216,17 @@ public class Neko {
         return commandArgs[0];
     }
 
+    private static void setLoggerLevel(CommandLine line) {
+        if (line.hasOption("d")) {
+            log.setLevel(Level.INFO);
+        } else if (line.hasOption("v")) {
+            log.setLevel(Level.ALL);
+        }
+    }
+
     private static void showHelps() {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("neko [OPTIONS]...", options);
+        formatter.printHelp("neko [OPTIONS]", options);
         System.out.println("");
         showHelps(readOptions, "read");
         System.out.println("");
@@ -214,7 +242,7 @@ public class Neko {
 
     private static void showHelps(Options options, String command) {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("neko " + command + " [ARGS]", options);
+        formatter.printHelp("neko " + command + " [ARGS] <path>", options);
     }
 
     private static void showHelpCopy() {
