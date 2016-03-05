@@ -1,13 +1,21 @@
 package com.neko;
 
-import com.neko.msg.*;
+import static com.neko.msg.NekoOpcode.ERROR;
+import static com.neko.msg.NekoOpcode.RESULT;
 
-import java.io.*;
+import com.neko.msg.NekoData;
+import com.neko.msg.NekoDeserializer;
+import com.neko.msg.NekoSerializer;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.nio.channels.FileChannel;
-
-import static com.neko.msg.NekoOpcode.*;
 
 public class UDPServer {
 
@@ -36,7 +44,9 @@ public class UDPServer {
             return res;
         } finally {
             try {
-                if (raf != null) raf.close();
+                if (raf != null) {
+                    raf.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -67,7 +77,9 @@ public class UDPServer {
             return res;
         } finally {
             try {
-                if (raf != null) raf.close();
+                if (raf != null) {
+                    raf.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -89,7 +101,7 @@ public class UDPServer {
         File destFile = new File(path + "_copy");
 
         try {
-            if(!destFile.exists()) {
+            if (!destFile.exists()) {
                 destFile.createNewFile();
             }
             FileChannel source = null;
@@ -98,12 +110,11 @@ public class UDPServer {
                 source = new FileInputStream(sourceFile).getChannel();
                 destination = new FileOutputStream(destFile).getChannel();
                 destination.transferFrom(source, 0, source.size());
-            }
-            finally {
-                if(source != null) {
+            } finally {
+                if (source != null) {
                     source.close();
                 }
-                if(destination != null) {
+                if (destination != null) {
                     destination.close();
                 }
             }
@@ -141,33 +152,40 @@ public class UDPServer {
 
                 System.out.println("Request: " + new String(requestPacket.getData()));
 
-                NekoData r = deserializer.deserialize(requestPacket.getData());
+                NekoData request = deserializer.deserialize(requestPacket.getData());
 
-                NekoData res = new NekoData();
+                NekoData respond = new NekoData();
 
-                switch (r.getOpcode()) {
+                switch (request.getOpcode()) {
                     case READ:
-                        res = handleRead(r.getPath(), r.getOffset(), r.getLength());
+                        respond = handleRead(request.getPath(),
+                                request.getOffset(),
+                                request.getLength());
                         break;
                     case INSERT:
-                        res = handleInsert(r.getPath(), r.getOffset(), r.getText());
+                        respond = handleInsert(request.getPath(),
+                                request.getOffset(),
+                                request.getText());
                         break;
                     case MONITOR:
-                        res = handleMonitor(r.getPath(), r.getInterval());
+                        respond = handleMonitor(request.getPath(), request.getInterval());
                         break;
                     case COPY:
-                        res = handleCopy(r.getPath());
+                        respond = handleCopy(request.getPath());
                         break;
                     case COUNT:
-                        res = handleCount(r.getPath());
+                        respond = handleCount(request.getPath());
                         break;
+                    default:
+                        // If the operation code is not defined, we just skip this request
+                        continue;
                 }
 
-                byte[] resBytes = serializer.serialize(res).toBytes();
+                byte[] respondBytes = serializer.serialize(respond).toBytes();
 
                 DatagramPacket reply = new DatagramPacket(
-                        resBytes,
-                        resBytes.length,
+                        respondBytes,
+                        respondBytes.length,
                         requestPacket.getAddress(),
                         requestPacket.getPort());
                 socket.send(reply); //send packet using socket method

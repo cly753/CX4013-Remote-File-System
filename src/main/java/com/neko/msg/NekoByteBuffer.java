@@ -96,11 +96,13 @@ public class NekoByteBuffer {
     }
 
     public static int sizeInByte(int val) {
-        return sizeInByte(NekoDataType.INTEGER) + NekoIOConstants.INT_LENGTH; // 1 byte for type + 4 byte for data
+        // 1 byte for type + 4 byte for data
+        return sizeInByte(NekoDataType.INTEGER) + NekoIOConstants.INT_LENGTH;
     }
 
     public static int sizeInByte(String string) {
-        return sizeInByte(NekoDataType.STRING) + NekoIOConstants.INT_LENGTH + string.length(); // 1 type + 4 byte for length + data
+        // 1 type + 4 byte for length + data
+        return sizeInByte(NekoDataType.STRING) + NekoIOConstants.INT_LENGTH + string.length();
     }
 
     public static int sizeInByte(NekoOpcode opcode) {
