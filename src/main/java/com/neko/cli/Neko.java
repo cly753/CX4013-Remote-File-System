@@ -69,6 +69,8 @@ public class Neko {
     private static Options readOptions = new Options();
     private static Options insertOptions = new Options();
     private static Options monitorOptions = new Options();
+    private static Options copyOptions = new Options();
+    private static Options countOptions = new Options();
 
     static {
         options.addOption(help);
@@ -88,6 +90,12 @@ public class Neko {
         monitorOptions.addOption(timeOption);
         monitorOptions.addOption(debug);
         monitorOptions.addOption(verbose);
+
+        copyOptions.addOption(debug);
+        copyOptions.addOption(verbose);
+
+        countOptions.addOption(debug);
+        countOptions.addOption(verbose);
 
         log.setLevel(Level.WARNING);
     }
@@ -114,14 +122,10 @@ public class Neko {
                 monitor(commandArgs);
                 break;
             case "copy":
-                String copyFilePath = getFilePath(commandArgs);
-                System.out.println("file path: " + copyFilePath);
-                // TODO(andyccs): copy logic here
+                copy(commandArgs);
                 break;
             case "count":
-                String countFilePath = getFilePath(commandArgs);
-                System.out.println("file path: " + countFilePath);
-                // TODO(andyccs): count logic here
+                count(commandArgs);
                 break;
             default:
                 showHelps();
@@ -208,9 +212,45 @@ public class Neko {
         }
     }
 
+    private static void copy(String[] commandArgs) {
+        CommandLineParser parser = new DefaultParser();
+        try {
+            CommandLine line = parser.parse(copyOptions, commandArgs);
+            setLoggerLevel(line);
+
+            String filePath = getFilePath(line.getArgs());
+
+            log.log(Level.INFO, "file path: " + filePath);
+
+            // TODO(andyccs): copy logic here
+        } catch (ParseException exception) {
+            log.log(Level.WARNING, "Error: " + exception.getMessage());
+            showHelps(monitorOptions, "copy");
+            System.exit(-1);
+        }
+    }
+
+    private static void count(String[] commandArgs) {
+        CommandLineParser parser = new DefaultParser();
+        try {
+            CommandLine line = parser.parse(countOptions, commandArgs);
+            setLoggerLevel(line);
+
+            String filePath = getFilePath(line.getArgs());
+
+            log.log(Level.INFO, "file path: " + filePath);
+
+            // TODO(andyccs): count logic here
+        } catch (ParseException exception) {
+            log.log(Level.WARNING, "Error: " + exception.getMessage());
+            showHelps(monitorOptions, "count");
+            System.exit(-1);
+        }
+    }
+
     private static String getFilePath(String[] commandArgs) {
         if (commandArgs.length == 0) {
-            System.err.println("Please provide a file path");
+            log.log(Level.WARNING, "Please provide a file path");
             System.exit(-1);
         }
         return commandArgs[0];
@@ -234,23 +274,15 @@ public class Neko {
         System.out.println("");
         showHelps(monitorOptions, "monitor");
         System.out.println("");
-        showHelpCopy();
+        showHelps(copyOptions, "copy");
         System.out.println("");
-        showHelpCount();
+        showHelps(countOptions, "count");
         System.out.println("");
     }
 
     private static void showHelps(Options options, String command) {
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("neko " + command + " [ARGS] <path>", options);
-    }
-
-    private static void showHelpCopy() {
-        System.out.println("usage: neko copy <path>");
-    }
-
-    private static void showHelpCount() {
-        System.out.println("usage: neko count <path>");
     }
 
     private static String hostname = "localhost";
