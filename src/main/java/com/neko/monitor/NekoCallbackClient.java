@@ -5,7 +5,10 @@ import com.neko.msg.NekoOpcode;
 import com.neko.msg.NekoSerializer;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,7 +70,8 @@ public class NekoCallbackClient implements NekoCallback {
             NekoSerializer serializer = new NekoSerializer();
             byte[] requestBytes = serializer.serialize(request).toBytes();
             DatagramSocket socket = new DatagramSocket();
-            DatagramPacket requestPacket = new DatagramPacket(requestBytes, requestBytes.length, host, port);
+            DatagramPacket requestPacket =
+                    new DatagramPacket(requestBytes, requestBytes.length, host, port);
             socket.send(requestPacket);
         } catch (IOException e) {
             e.printStackTrace();

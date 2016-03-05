@@ -3,13 +3,10 @@ package com.neko.monitor;
 import com.neko.msg.NekoData;
 import com.neko.msg.NekoDeserializer;
 import com.neko.msg.NekoOpcode;
-import com.neko.msg.NekoSerializer;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.SocketException;
+import java.net.DatagramSocket;;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -119,10 +116,6 @@ public class NekoCallbackServer {
         if (request.getOpcode() != NekoOpcode.RESULT) {
             return ;
         }
-
-        //
-        // some validation
-        //
 
         if (null != callback && callback.isValid()) {
             callback.invoke(request.getPath(), request.getText(), request.getError());
