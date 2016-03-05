@@ -1,5 +1,6 @@
 package com.neko.cli;
 
+import static com.neko.msg.NekoOpcode.INSERT;
 import static com.neko.msg.NekoOpcode.READ;
 
 import com.neko.msg.NekoData;
@@ -13,6 +14,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -127,9 +129,7 @@ public class Neko {
             request.setOffset(Integer.parseInt(line.getOptionValue("o")));
             request.setLength(Integer.parseInt(line.getOptionValue("b")));
 
-            NekoSerializer serializer = new NekoSerializer();
-            byte[] requestBytes = serializer.serialize(request).toBytes();
-            String respond = sendBytes(requestBytes);
+            String respond = sendBytes(request);
             System.out.println(respond);
         } catch (ParseException exception) {
             System.err.println("Error: " + exception.getMessage());
@@ -148,14 +148,24 @@ public class Neko {
 
             String filePath = getFilePath(line.getArgs());
 
-            // TODO(andyccs): insert logic here
             System.out.println("file path: " + filePath);
             System.out.println("offset: " + Integer.parseInt(line.getOptionValue("o")));
             System.out.println("text: " + line.getOptionValue("text"));
 
-        } catch (ParseException exp) {
-            System.err.println("Error: " + exp.getMessage());
+            NekoData request = new NekoData();
+            request.setOpcode(INSERT);
+            request.setPath(filePath);
+            request.setOffset(Integer.parseInt(line.getOptionValue("o")));
+            request.setText(StringEscapeUtils.unescapeJava(line.getOptionValue("text")));
+            
+            String respond = sendBytes(request);
+            System.out.println(respond);
+        } catch (ParseException exception) {
+            System.err.println("Error: " + exception.getMessage());
             showHelps(insertOptions, "insert");
+            System.exit(-1);
+        } catch (IOException exception) {
+            System.err.println("Error: " + exception.getMessage());
             System.exit(-1);
         }
     }
@@ -217,21 +227,29 @@ public class Neko {
 
     private static String hostname = "localhost";
     private static int port = 6789;
-    public static final int SOCKET_SIZE = 2244;
-    public static final int BUFFER_SIZE = 1000;
+    public static final int DATAGRAM_PORT = 2244;
 
-    private static String sendBytes(byte[] requestBytes) throws IOException {
+    private static String sendBytes(NekoData request) throws IOException {
+        NekoSerializer serializer = new NekoSerializer();
+        byte[] requestBytes = serializer.serialize(request).toBytes();
 
         InetAddress host = InetAddress.getByName(hostname);
-        DatagramSocket socket = new DatagramSocket(SOCKET_SIZE);
+
+        // Convert bytes to datagram socket
         DatagramPacket requestPacket =
                 new DatagramPacket(requestBytes, requestBytes.length, host, port);
-        socket.send(requestPacket); //send packet using socket method
 
-        byte[] buffer = new byte[BUFFER_SIZE]; //a buffer for receive
+        // Send the datagram
+        DatagramSocket socket = new DatagramSocket(DATAGRAM_PORT);
+        socket.send(requestPacket);
+
+        // Receive the respond datagram from server
+        // TODO(andyccs): How to receive all respond bytes from server?
+        byte[] buffer = new byte[5000];
         DatagramPacket replyPacket = new DatagramPacket(buffer, buffer.length);
         socket.receive(replyPacket);
 
+        // Deserialize the respond
         NekoDeserializer deserializer = new NekoDeserializer();
         NekoData reply = deserializer.deserialize(replyPacket.getData());
         return reply.toString();

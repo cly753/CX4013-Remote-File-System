@@ -38,8 +38,12 @@ $ ./neko-file-system
 Here are some examplesg:
 
 ```Shell
-# Read 500 bytes, starting from the first byte, from the given file path
+# Read 500 bytes, starting from the first byte, from the given file
 $ ./neko-file-system read -b 500 -o 0 /home/andy/Documents/HelloWorld.txt
+
+# Insert the string "hello world\n", where "\n" represents a new line character,
+# starting from the first byte, to the given file
+$ ./neko-file-system insert -o 0 --text "hello world\n" /home/andy/Documents/HelloWorld.txt
 ```
 
 # Getting Started
