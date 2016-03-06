@@ -77,7 +77,7 @@ public class NekoCallbackClientTracker {
     /**
      * Inform all clients listening to the update to path.
      */
-    public void informClients(String path, String text, String error) {
+    public void informUpdate(String path, String text, String error) {
         List<NekoCallback> callbackList = getCallbackList(path, false);
         if (null == callbackList) {
             return ;

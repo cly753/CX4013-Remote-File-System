@@ -48,9 +48,6 @@ public class NekoCallbackServer {
             // when server only listens for {interval} milliseconds
             System.out.println("interval = " + interval);
             if (interval > 0) {
-                final Thread serverThread = Thread.currentThread();
-                final DatagramSocket finalSocket = socket;
-
                 // Create and start a Thread to behave as a timer.
                 // When {interval} milliseconds is passed,
                 // close the socket:DatagramSocket
@@ -64,10 +61,8 @@ public class NekoCallbackServer {
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                        if (!finalSocket.isClosed()) {
-                            log.log(Level.FINE, "close finalSocket");
-                            finalSocket.close();
-                        }
+                        log.log(Level.FINE, "Thread timerThread close socket");
+                        stop();
                     }
                 });
                 timerThread.start();
@@ -114,7 +109,7 @@ public class NekoCallbackServer {
      */
     public void handle(NekoData request) {
         if (request.getOpcode() != NekoOpcode.RESULT) {
-            return ;
+            return;
         }
 
         if (null != callback && callback.isValid()) {
