@@ -113,29 +113,38 @@ public class Neko {
         String[] commandArgs = new String[args.length - 1];
         System.arraycopy(args, 1, commandArgs, 0, commandArgs.length);
 
-        switch (command) {
-            case "read":
-                read(commandArgs);
-                break;
-            case "insert":
-                insert(commandArgs);
-                break;
-            case "monitor":
-                monitor(commandArgs);
-                break;
-            case "copy":
-                copy(commandArgs);
-                break;
-            case "count":
-                count(commandArgs);
-                break;
-            default:
-                showHelps();
-                break;
+        while(true) {
+            try {
+                switch (command) {
+                    case "read":
+                        read(commandArgs);
+                        break;
+                    case "insert":
+                        insert(commandArgs);
+                        break;
+                    case "monitor":
+                        monitor(commandArgs);
+                        break;
+                    case "copy":
+                        copy(commandArgs);
+                        break;
+                    case "count":
+                        count(commandArgs);
+                        break;
+                    default:
+                        showHelps();
+                        break;
+                }
+            } catch (IOException exception) {
+                log.log(Level.WARNING, "Error: " + exception.getMessage());
+                log.log(Level.INFO, "Resending command");
+                continue;
+            }
+            break;
         }
     }
 
-    private static void read(String[] commandArgs) {
+    private static void read(String[] commandArgs) throws IOException {
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine line = parser.parse(readOptions, commandArgs);
@@ -149,6 +158,7 @@ public class Neko {
 
             NekoData request = new NekoData();
             request.setOpcode(READ);
+            request.setRequestId(String.valueOf(System.currentTimeMillis()));
             request.setPath(filePath);
             request.setOffset(Integer.parseInt(line.getOptionValue("o")));
             request.setLength(Integer.parseInt(line.getOptionValue("b")));
@@ -159,13 +169,10 @@ public class Neko {
             log.log(Level.WARNING, "Error: " + exception.getMessage());
             showHelps(readOptions, "read");
             System.exit(-1);
-        } catch (IOException exception) {
-            log.log(Level.WARNING, "Error: " + exception.getMessage());
-            System.exit(-1);
         }
     }
 
-    private static void insert(String[] commandArgs) {
+    private static void insert(String[] commandArgs) throws IOException {
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine line = parser.parse(insertOptions, commandArgs);
@@ -179,6 +186,7 @@ public class Neko {
 
             NekoData request = new NekoData();
             request.setOpcode(INSERT);
+            request.setRequestId(String.valueOf(System.currentTimeMillis()));
             request.setPath(filePath);
             request.setOffset(Integer.parseInt(line.getOptionValue("o")));
             request.setText(StringEscapeUtils.unescapeJava(line.getOptionValue("text")));
@@ -189,13 +197,10 @@ public class Neko {
             log.log(Level.WARNING, "Error: " + exception.getMessage());
             showHelps(insertOptions, "insert");
             System.exit(-1);
-        } catch (IOException exception) {
-            log.log(Level.WARNING, "Error: " + exception.getMessage());
-            System.exit(-1);
         }
     }
 
-    private static void monitor(String[] commandArgs) {
+    private static void monitor(String[] commandArgs) throws IOException {
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine line = parser.parse(monitorOptions, commandArgs);
@@ -214,7 +219,7 @@ public class Neko {
         }
     }
 
-    private static void copy(String[] commandArgs) {
+    private static void copy(String[] commandArgs) throws IOException {
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine line = parser.parse(copyOptions, commandArgs);
@@ -225,6 +230,7 @@ public class Neko {
             log.log(Level.INFO, "file path: " + filePath);
 
             NekoData request = new NekoData();
+            request.setRequestId(String.valueOf(System.currentTimeMillis()));
             request.setOpcode(COPY);
             request.setPath(filePath);
 
@@ -234,13 +240,10 @@ public class Neko {
             log.log(Level.WARNING, "Error: " + exception.getMessage());
             showHelps(copyOptions, "copy");
             System.exit(-1);
-        } catch (IOException exception) {
-            log.log(Level.WARNING, "Error: " + exception.getMessage());
-            System.exit(-1);
         }
     }
 
-    private static void count(String[] commandArgs) {
+    private static void count(String[] commandArgs) throws IOException {
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine line = parser.parse(countOptions, commandArgs);
@@ -251,6 +254,7 @@ public class Neko {
             log.log(Level.INFO, "file path: " + filePath);
 
             NekoData request = new NekoData();
+            request.setRequestId(String.valueOf(System.currentTimeMillis()));
             request.setOpcode(COUNT);
             request.setPath(filePath);
 
@@ -259,9 +263,6 @@ public class Neko {
         } catch (ParseException exception) {
             log.log(Level.WARNING, "Error: " + exception.getMessage());
             showHelps(countOptions, "count");
-            System.exit(-1);
-        } catch (IOException exception) {
-            log.log(Level.WARNING, "Error: " + exception.getMessage());
             System.exit(-1);
         }
     }
@@ -319,6 +320,7 @@ public class Neko {
 
         // Send the datagram
         DatagramSocket socket = new DatagramSocket(DATAGRAM_PORT);
+        socket.setSoTimeout(1000);
         socket.send(requestPacket);
 
         // Receive the respond datagram from server
