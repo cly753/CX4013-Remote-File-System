@@ -13,8 +13,8 @@ import java.util.logging.Logger;
 public class UnstableDatagramSocket extends DatagramSocket {
     private static final Logger log = Logger.getLogger(UnstableDatagramSocket.class.getName());
 
-    public final double RECEIVE_FAIL_PROB = 0.5;
-    public final double SEND_FAIL_PROB = 0.5;
+    public final double DROP_RECEIVE_PROB = 0.5;
+    public final double DROP_SEND_PROB = 0.5;
 
     public final Queue<Boolean> receiveSequence = new LinkedList<>();
     public final Queue<Boolean> sendSequence = new LinkedList<>();
@@ -82,12 +82,12 @@ public class UnstableDatagramSocket extends DatagramSocket {
     private boolean dropSend() {
         if (!sendSequence.isEmpty())
             return sendSequence.poll();
-        return ran.nextDouble() > SEND_FAIL_PROB;
+        return ran.nextDouble() < DROP_SEND_PROB;
     }
 
     private boolean dropReceive() {
         if (!receiveSequence.isEmpty())
             return receiveSequence.poll();
-        return ran.nextDouble() > RECEIVE_FAIL_PROB;
+        return ran.nextDouble() < DROP_RECEIVE_PROB;
     }
 }
