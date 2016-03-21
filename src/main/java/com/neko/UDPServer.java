@@ -3,6 +3,8 @@ package com.neko;
 import static com.neko.msg.NekoOpcode.ERROR;
 import static com.neko.msg.NekoOpcode.RESULT;
 
+import com.neko.monitor.NekoCallbackClient;
+import com.neko.monitor.NekoCallbackClientTracker;
 import com.neko.msg.NekoData;
 import com.neko.msg.NekoDeserializer;
 import com.neko.msg.NekoSerializer;
@@ -15,6 +17,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.channels.FileChannel;
 import java.util.HashMap;
 
@@ -22,9 +26,13 @@ public class UDPServer {
 
     public static final int SERVER_PORT = 6789;
     public static final int BUFFER_SIZE = 1000;
+    public static final int MONITOR_CLIENT_PORT = 8888;
+
     private static final String COPY_POSTFIX = "_copy";
     private static boolean AT_MOST_ONE = true; //true for AT_MOST_ONE, false for AT_LEAST_ONE
     private static HashMap<String, NekoData> history = new HashMap<>();
+
+    private static NekoCallbackClientTracker callbackClientTracker = new NekoCallbackClientTracker();
 
     private static NekoData handleRead(String path, Integer offset, Integer length) {
         NekoData res = new NekoData();
@@ -76,6 +84,8 @@ public class UDPServer {
 
             fos = new FileOutputStream(file, false); // false to overwrite.
             fos.write(newText.getBytes());
+
+            callbackClientTracker.informUpdate(path, null);
         } catch (FileNotFoundException e) {
             String errorMessage = "Unable to open file '" + path + "'";
             System.out.println(errorMessage);
@@ -104,9 +114,24 @@ public class UDPServer {
         return res;
     }
 
-    private static NekoData handleMonitor(String path, Integer interval) {
+    private static NekoData handleMonitor(InetAddress address, String path, Integer interval) {
         NekoData res = new NekoData();
         res.setOpcode(RESULT);
+
+        try {
+            NekoCallbackClient client = new NekoCallbackClient(address, MONITOR_CLIENT_PORT, interval);
+            callbackClientTracker.register(path, client);
+
+            // TODO
+            // set response to OK
+            res.setError(null);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+
+            // TODO
+            // set response to ERROR
+            res.setError("Unknown Host");
+        }
         return res;
     }
 
@@ -229,7 +254,7 @@ public class UDPServer {
                                 request.getText());
                         break;
                     case MONITOR:
-                        respond = handleMonitor(request.getPath(), request.getInterval());
+                        respond = handleMonitor(requestPacket.getAddress(), request.getPath(), request.getInterval());
                         break;
                     case COPY:
                         respond = handleCopy(request.getPath());

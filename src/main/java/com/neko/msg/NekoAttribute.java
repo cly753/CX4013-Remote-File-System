@@ -4,14 +4,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public enum NekoAttribute {
-    PATH(0),
-    OFFSET(1),
-    INTERVAL(2),
-    TEXT(3),
-    LENGTH(4),
+    REQUEST_ID(0),
+    PATH(1),
+    OFFSET(2),
+    INTERVAL(3),
+    TEXT(4),
+    LENGTH(5),
 
-    NUMBER(5),
-    ERROR(6);
+    NUMBER(6),
+    ERROR(7);
 
     private static final Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
 

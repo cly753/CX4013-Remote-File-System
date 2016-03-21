@@ -4,8 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.neko.monitor.NekoCallback;
 import com.neko.monitor.NekoCallbackClient;
 import com.neko.monitor.NekoCallbackClientTracker;
+import com.neko.monitor.NekoCallbackServer;
 import com.neko.msg.NekoByteBuffer;
 import com.neko.msg.NekoData;
 import com.neko.msg.NekoDeserializer;
@@ -65,11 +67,11 @@ public class MainTest {
 
     @Test
     public void testNekoCallbackClientTracker() throws UnknownHostException {
-        byte[] ip = new byte[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255};
+        String host = "localhost";
         int port = 8888;
         String path = "http://www.google.com";
 
-        NekoCallbackClient client = new NekoCallbackClient(ip, port, -1);
+        NekoCallbackClient client = new NekoCallbackClient(host, port, -1);
         NekoCallbackClientTracker tracker = new NekoCallbackClientTracker();
 
         tracker.register(path, client);
@@ -100,5 +102,58 @@ public class MainTest {
         NekoData reply = deserializer.deserialize(longerBytes);
 
         assertEquals(request.toString(), reply.toString());
+    }
+
+    @Test
+    public void testNekoCallbackClient() throws UnknownHostException, InterruptedException {
+        final String host = "localhost";
+        final int port = 8888;
+        String[] paths = {
+                "/Users/cly/Dropbox/code/Neko/src/main/java/com/neko/UDPServer.java",
+                "/Users/cly/Dropbox/code/Neko/src/main/java/com/neko/UDPClient.java"
+        };
+        String[] texts = {
+                "Hello Google",
+                "Hello Bing"
+        };
+        String error = null;
+
+        long[] runFor = {
+                1000 * 10
+        };
+
+        Thread serverThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                NekoCallbackServer callbackServer = new NekoCallbackServer(port, 100, new NekoCallback() {
+                    @Override
+                    public void invoke(String path, String text, String error) {
+                        System.out.println(
+                                "NekoCallbackServer NekoCallback"
+                                        + "\n\tpath: " + path
+                                        + "\n\ttext: " + text
+                                        + "\n\terror: " + error
+                        );
+                    }
+
+                    @Override
+                    public boolean isValid() {
+                        return true;
+                    }
+                });
+
+                callbackServer.start(1000 * 6);
+            }
+        });
+        serverThread.start();
+
+        NekoCallbackClientTracker tracker = new NekoCallbackClientTracker();
+        tracker.register(paths[0], new NekoCallbackClient(host, port, System.currentTimeMillis() + runFor[0]));
+
+        for (int k = 0; k < 3; k++) {
+            Thread.sleep(1000 * 4);
+            tracker.informUpdate(paths[0], texts[0], error);
+            System.out.println("NekoCallbackClientTracker informed");
+        }
     }
 }
