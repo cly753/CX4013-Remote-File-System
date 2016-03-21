@@ -233,38 +233,38 @@ public class UDPServer {
 
                 NekoData request = deserializer.deserialize(requestPacket.getData());
 
-                if (AT_MOST_ONE) {
-                    String requestID = request.getRequestID();
-                    if (history.containsKey(requestID)) {
-                        return history.get(requestID);
-                    }
-                }
-
                 NekoData respond = new NekoData();
 
-                switch (request.getOpcode()) {
-                    case READ:
-                        respond = handleRead(request.getPath(),
-                                request.getOffset(),
-                                request.getLength());
-                        break;
-                    case INSERT:
-                        respond = handleInsert(request.getPath(),
-                                request.getOffset(),
-                                request.getText());
-                        break;
-                    case MONITOR:
-                        respond = handleMonitor(requestPacket.getAddress(), request.getPath(), request.getInterval());
-                        break;
-                    case COPY:
-                        respond = handleCopy(request.getPath());
-                        break;
-                    case COUNT:
-                        respond = handleCount(request.getPath());
-                        break;
-                    default:
-                        // If the operation code is not defined, we just skip this request
-                        continue;
+                if (AT_MOST_ONE) {
+                    String requestId = request.getRequestId();
+                    if (history.containsKey(requestId)) {
+                        respond = history.get(requestId);
+                    } else {
+                        switch (request.getOpcode()) {
+                            case READ:
+                                respond = handleRead(request.getPath(),
+                                        request.getOffset(),
+                                        request.getLength());
+                                break;
+                            case INSERT:
+                                respond = handleInsert(request.getPath(),
+                                        request.getOffset(),
+                                        request.getText());
+                                break;
+                            case MONITOR:
+                                respond = handleMonitor(requestPacket.getAddress(), request.getPath(), request.getInterval());
+                                break;
+                            case COPY:
+                                respond = handleCopy(request.getPath());
+                                break;
+                            case COUNT:
+                                respond = handleCount(request.getPath());
+                                break;
+                            default:
+                                // If the operation code is not defined, we just skip this request
+                                continue;
+                        }
+                    }
                 }
 
                 byte[] respondBytes = serializer.serialize(respond).toBytes();
