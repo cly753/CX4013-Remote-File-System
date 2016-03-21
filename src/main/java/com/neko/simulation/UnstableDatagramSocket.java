@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,10 +16,38 @@ public class UnstableDatagramSocket extends DatagramSocket {
     public final double RECEIVE_FAIL_PROB = 0.5;
     public final double SEND_FAIL_PROB = 0.5;
 
+    public final Queue<Boolean> receiveSequence = new LinkedList<>();
+    public final Queue<Boolean> sendSequence = new LinkedList<>();
+
     private final Random ran = new Random();
 
     public UnstableDatagramSocket(int port) throws SocketException {
         super(port);
+    }
+
+    /**
+     * receiveSequence: "00110"
+     *      means:
+     *          for receive calls: [drop, drop, not drop, not drop, drop]
+     * sendSequence: "00110"
+     *      means:
+     *          for send calls: [drop, drop, not drop, not drop, drop]
+     */
+    public UnstableDatagramSocket(int port, String receiveSequence, String sendSequence) throws SocketException {
+        super(port);
+        addSequence(this.receiveSequence, receiveSequence);
+        addSequence(this.sendSequence, sendSequence);
+    }
+
+    private void addSequence(Queue<Boolean> sequence, String sequenceString) {
+        if (sequence != null) {
+            for (char c : sequenceString.toCharArray()) {
+                if (c == '0')
+                    sequence.add(false);
+                else
+                    sequence.add(true);
+            }
+        }
     }
 
     @Override
@@ -50,10 +80,14 @@ public class UnstableDatagramSocket extends DatagramSocket {
     }
 
     private boolean dropSend() {
+        if (!sendSequence.isEmpty())
+            return sendSequence.poll();
         return ran.nextDouble() > SEND_FAIL_PROB;
     }
 
     private boolean dropReceive() {
+        if (!receiveSequence.isEmpty())
+            return receiveSequence.poll();
         return ran.nextDouble() > RECEIVE_FAIL_PROB;
     }
 }
