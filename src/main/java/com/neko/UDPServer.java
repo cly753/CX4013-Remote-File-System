@@ -13,6 +13,7 @@ public class UDPServer {
 
     public static final int SERVER_PORT = 6789;
     public static final int BUFFER_SIZE = 1000;
+    private static final String COPY_POSTFIX = "_copy";
 
     private static NekoData handleRead(String path, Integer offset, Integer length) {
         NekoData res = new NekoData();
@@ -82,16 +83,30 @@ public class UDPServer {
         return res;
     }
 
+    private static String getCopyPath(String path) {
+        int p = path.lastIndexOf('.');
+        if (p == -1) {
+            return path + COPY_POSTFIX;
+        }
+        return path.substring(0,p) + COPY_POSTFIX + path.substring(p);
+    }
+
     private static NekoData handleCopy(String path) {
         NekoData res = new NekoData();
 
         File sourceFile = new File(path);
-        File destFile = new File(path + "_copy");
+
+        //check if the deskFile exsits or not
 
         try {
-            if(!destFile.exists()) {
-                destFile.createNewFile();
+            String copyPath = getCopyPath(path);
+            File destFile = new File(copyPath);
+            while(destFile.exists()) {
+                copyPath = getCopyPath(copyPath);
+                destFile = new File(copyPath);
             }
+            destFile.createNewFile();
+
             FileChannel source = null;
             FileChannel destination = null;
             try {
