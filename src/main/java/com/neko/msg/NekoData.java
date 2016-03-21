@@ -12,6 +12,8 @@ public class NekoData {
     @NekoFieldOpcode
     private NekoOpcode opcode;
 
+    @NekoFieldAttribute(attribute = NekoAttribute.REQUEST_ID, type = NekoDataType.STRING)
+    private String requestId;
     @NekoFieldAttribute(attribute = NekoAttribute.PATH, type = NekoDataType.STRING)
     private String path;
     @NekoFieldAttribute(attribute = NekoAttribute.OFFSET, type = NekoDataType.INTEGER)
@@ -27,8 +29,6 @@ public class NekoData {
     @NekoFieldAttribute(attribute = NekoAttribute.ERROR, type = NekoDataType.STRING)
     private String error;
 
-    private Map<String, Object> additionalAttributes;
-
     /**
      * NULL attributes are not set.
      */
@@ -38,6 +38,10 @@ public class NekoData {
 
     public NekoOpcode getOpcode() {
         return opcode;
+    }
+
+    public String getRequestId() {
+        return requestId;
     }
 
     public String getPath() {
@@ -70,6 +74,10 @@ public class NekoData {
 
     public void setOpcode(NekoOpcode opcode) {
         this.opcode = opcode;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 
     public void setPath(String path) {
@@ -111,7 +119,6 @@ public class NekoData {
                 + ", length=" + length
                 + ", number=" + number
                 + ", error='" + error + '\''
-                + ", additionalAttributes=" + additionalAttributes
                 + '}';
     }
 }

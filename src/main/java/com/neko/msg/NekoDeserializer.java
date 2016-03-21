@@ -25,6 +25,9 @@ public class NekoDeserializer {
             // use map ?
             //
             switch (attribute) {
+                case REQUEST_ID:
+                    deserialized.setRequestId(in.readString());
+                    break;
                 case PATH:
                     deserialized.setPath(in.readString());
                     break;

@@ -1,5 +1,9 @@
 package com.neko.monitor;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -75,7 +79,7 @@ public class NekoCallbackClientTracker {
     }
 
     /**
-     * Inform all clients listening to the update to path.
+     * Inform all clients listening to the update to "path", updated content is "text", error is "error".
      */
     public void informUpdate(String path, String text, String error) {
         List<NekoCallback> callbackList = getCallbackList(path, false);
@@ -95,6 +99,25 @@ public class NekoCallbackClientTracker {
             }
         }
         dropEntryIfEmpty(path);
+    }
+
+    /**
+     * Inform all clients listening to the update to "path".
+     * Updated content is read by this method.
+     */
+    public void informUpdate(String path, String error) {
+        String text = null;
+        if (null == error) {
+            try {
+                text = new String(Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                e.printStackTrace();
+
+                error = "IOException";
+            }
+        }
+
+        informUpdate(path, text, error);
     }
 
     /**
