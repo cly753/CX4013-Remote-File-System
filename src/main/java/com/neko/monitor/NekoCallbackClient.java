@@ -40,7 +40,8 @@ public class NekoCallbackClient implements NekoCallback {
         this.validUntil = validUntil;
     }
 
-    public NekoCallbackClient(InetAddress host, int port, long validUntil) throws UnknownHostException {
+    public NekoCallbackClient(InetAddress host, int port, long validUntil)
+            throws UnknownHostException {
         this.host = host;
         this.port = port;
         this.validUntil = validUntil;
