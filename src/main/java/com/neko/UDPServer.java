@@ -110,8 +110,10 @@ public class UDPServer {
 
         //check if the deskFile exsits or not
 
+        String copyPath = "";
+
         try {
-            String copyPath = getCopyPath(path);
+            copyPath = getCopyPath(path);
             File destFile = new File(copyPath);
             while(destFile.exists()) {
                 copyPath = getCopyPath(copyPath);
@@ -135,9 +137,8 @@ public class UDPServer {
             }
         } catch (IOException e) {
             res.setOpcode(ERROR);
-            String errorMessage = "Error writing file '" + path + "_copy'";
+            String errorMessage = "Error writing file '" + copyPath + "'";
             System.out.println(errorMessage);
-            res.setOpcode(ERROR);
             res.setError(errorMessage);
             return res;
         }
@@ -146,8 +147,26 @@ public class UDPServer {
     }
 
     private static NekoData handleCount(String path) {
+        File file = new File(path);
         NekoData res = new NekoData();
+        if (!file.exists()) {
+            // return error message that the file does not exists
+            res.setOpcode(ERROR);
+            String errorMessage = path + " does not exists";
+            System.out.println(errorMessage);
+            res.setError(errorMessage);
+            return res;
+        }
+        if (!file.isDirectory()) {
+            res.setOpcode(ERROR);
+            String errorMessage = path + " is not a directory";
+            System.out.println(errorMessage);
+            res.setError(errorMessage);
+            return res;
+        }
         res.setOpcode(RESULT);
+        int numberOfFiles = file.listFiles().length;
+        res.setNumber(numberOfFiles);
         return res;
     }
 
