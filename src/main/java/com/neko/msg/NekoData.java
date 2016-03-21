@@ -6,8 +6,6 @@
 
 package com.neko.msg;
 
-import java.util.Map;
-
 public class NekoData {
     @NekoFieldOpcode
     private NekoOpcode opcode;

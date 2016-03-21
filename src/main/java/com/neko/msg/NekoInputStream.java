@@ -96,7 +96,8 @@ public class NekoInputStream {
     }
 
     public static String convertString(byte[] bytes) {
-        log.log(Level.FINEST, String.format("%d %s", new String(bytes).length(), new String(bytes)));
+        log.log(Level.FINEST,
+                String.format("%d %s", new String(bytes).length(), new String(bytes)));
         return new String(bytes);
     }
 }

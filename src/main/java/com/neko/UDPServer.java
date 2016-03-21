@@ -27,6 +27,8 @@ public class UDPServer {
     public static final int BUFFER_SIZE = 1000;
     public static final int MONITOR_CLIENT_PORT = 8888;
 
+    private static final String COPY_POSTFIX = "_copy";
+
     private static NekoCallbackClientTracker callbackClientTracker = new NekoCallbackClientTracker();
 
     private static NekoData handleRead(String path, Integer offset, Integer length) {
@@ -65,11 +67,20 @@ public class UDPServer {
 
     private static NekoData handleInsert(String path, Integer offset, String text) {
         NekoData res = new NekoData();
-        RandomAccessFile raf = null;
+
+        File file = new File(path);
+        FileInputStream fis = null;
+        FileOutputStream fos = null;
         try {
-            raf = new RandomAccessFile(path, "rw");
-            raf.seek(offset);
-            raf.writeChars(text);
+            fis = new FileInputStream(file);
+            byte[] data = new byte[(int) file.length()];
+            fis.read(data);
+
+            String oldtext = new String(data, "UTF-8");
+            String newText = text.substring(0, offset) + oldtext + text.substring(offset);
+
+            fos = new FileOutputStream(file, false); // false to overwrite.
+            fos.write(newText.getBytes());
 
             callbackClientTracker.informUpdate(path, null);
         } catch (FileNotFoundException e) {
@@ -86,8 +97,11 @@ public class UDPServer {
             return res;
         } finally {
             try {
-                if (raf != null) {
-                    raf.close();
+                if (fis != null) {
+                    fis.close();
+                }
+                if (fos != null) {
+                    fos.close();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -118,16 +132,32 @@ public class UDPServer {
         return res;
     }
 
+    private static String getCopyPath(String path) {
+        int p = path.lastIndexOf('.');
+        if (p == -1) {
+            return path + COPY_POSTFIX;
+        }
+        return path.substring(0,p) + COPY_POSTFIX + path.substring(p);
+    }
+
     private static NekoData handleCopy(String path) {
         NekoData res = new NekoData();
 
         File sourceFile = new File(path);
-        File destFile = new File(path + "_copy");
+
+        //check if the deskFile exsits or not
+
+        String copyPath = "";
 
         try {
-            if (!destFile.exists()) {
-                destFile.createNewFile();
+            copyPath = getCopyPath(path);
+            File destFile = new File(copyPath);
+            while(destFile.exists()) {
+                copyPath = getCopyPath(copyPath);
+                destFile = new File(copyPath);
             }
+            destFile.createNewFile();
+
             FileChannel source = null;
             FileChannel destination = null;
             try {
@@ -144,9 +174,8 @@ public class UDPServer {
             }
         } catch (IOException e) {
             res.setOpcode(ERROR);
-            String errorMessage = "Error writing file '" + path + "_copy'";
+            String errorMessage = "Error writing file '" + copyPath + "'";
             System.out.println(errorMessage);
-            res.setOpcode(ERROR);
             res.setError(errorMessage);
             return res;
         }
@@ -155,8 +184,26 @@ public class UDPServer {
     }
 
     private static NekoData handleCount(String path) {
+        File file = new File(path);
         NekoData res = new NekoData();
+        if (!file.exists()) {
+            // return error message that the file does not exists
+            res.setOpcode(ERROR);
+            String errorMessage = path + " does not exists";
+            System.out.println(errorMessage);
+            res.setError(errorMessage);
+            return res;
+        }
+        if (!file.isDirectory()) {
+            res.setOpcode(ERROR);
+            String errorMessage = path + " is not a directory";
+            System.out.println(errorMessage);
+            res.setError(errorMessage);
+            return res;
+        }
         res.setOpcode(RESULT);
+        int numberOfFiles = file.listFiles().length;
+        res.setNumber(numberOfFiles);
         return res;
     }
 
