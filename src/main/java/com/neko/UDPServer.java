@@ -16,12 +16,15 @@ import java.io.RandomAccessFile;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.nio.channels.FileChannel;
+import java.util.HashMap;
 
 public class UDPServer {
 
     public static final int SERVER_PORT = 6789;
     public static final int BUFFER_SIZE = 1000;
     private static final String COPY_POSTFIX = "_copy";
+    private static boolean AT_MOST_ONE = true; //true for AT_MOST_ONE, false for AT_LEAST_ONE
+    private static HashMap<String, NekoData> history = new HashMap<>();
 
     private static NekoData handleRead(String path, Integer offset, Integer length) {
         NekoData res = new NekoData();
@@ -183,6 +186,11 @@ public class UDPServer {
     }
 
     public static void main(String[] args) {
+        if (args[0] == "1") {
+            AT_MOST_ONE = true;
+        } else {
+            AT_MOST_ONE = false;
+        }
         DatagramSocket socket = null;
         try {
             //bound to host and port
@@ -199,6 +207,13 @@ public class UDPServer {
                 System.out.println("Request: " + new String(requestPacket.getData()));
 
                 NekoData request = deserializer.deserialize(requestPacket.getData());
+
+                if (AT_MOST_ONE) {
+                    String requestID = request.getRequestID();
+                    if (history.containsKey(requestID)) {
+                        return history.get(requestID);
+                    }
+                }
 
                 NekoData respond = new NekoData();
 
