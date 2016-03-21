@@ -13,6 +13,8 @@ import com.neko.msg.NekoOpcode;
 import com.neko.msg.NekoSerializer;
 import org.junit.Test;
 
+import java.net.UnknownHostException;
+
 public class MainTest {
 
     @Test
@@ -62,7 +64,7 @@ public class MainTest {
     }
 
     @Test
-    public void testNekoCallbackClientTracker() {
+    public void testNekoCallbackClientTracker() throws UnknownHostException {
         byte[] ip = new byte[]{(byte) 255, (byte) 255, (byte) 255, (byte) 255};
         int port = 8888;
         String path = "http://www.google.com";
@@ -77,7 +79,7 @@ public class MainTest {
 
         String text = "Hello Google";
         String error = null;
-        tracker.informClients(path, text, error);
+        tracker.informUpdate(path, text, error);
     }
 
     @Test

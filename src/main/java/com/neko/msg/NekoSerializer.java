@@ -47,7 +47,7 @@ public class NekoSerializer {
                                 (String) fieldValue,
                                 byteBuffer);
                     } else {
-                        throw new InputMismatchException();
+                        throw new InputMismatchException("Unknown NekoDataType");
                     }
                 }
             }
@@ -119,7 +119,7 @@ public class NekoSerializer {
                     } else if (NekoDataType.STRING == annotationAttribute.type()) {
                         size = sizeInByte((String) fieldValue);
                     } else {
-                        throw new InputMismatchException();
+                        throw new InputMismatchException("Unknown NekoDataType");
                     }
                     totalSize += size;
                 }

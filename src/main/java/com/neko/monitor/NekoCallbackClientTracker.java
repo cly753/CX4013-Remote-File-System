@@ -5,10 +5,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class NekoCallbackClientTracker {
-    private static final Logger log = Logger.getLogger(NekoCallbackServer.class.getName());
+    private static final Logger log = Logger.getLogger(NekoCallbackClientTracker.class.getName());
 
     private Map<String, List<NekoCallback>> remoteCallbacks;
 
@@ -21,10 +22,10 @@ public class NekoCallbackClientTracker {
      */
     public void register(String path, NekoCallback callback) {
         List<NekoCallback> callbackList = getCallbackList(path, true);
-        for (NekoCallback cb : callbackList) {
-            if (cb.equals(callback)) {
-                cb = callback;
-                return;
+        Iterator<NekoCallback> iter = callbackList.iterator();
+        while (iter.hasNext()) {
+            if (iter.next().equals(callback)) {
+                iter.remove();
             }
         }
         callbackList.add(callback);
@@ -76,7 +77,7 @@ public class NekoCallbackClientTracker {
     /**
      * Inform all clients listening to the update to path.
      */
-    public void informClients(String path, String text, String error) {
+    public void informUpdate(String path, String text, String error) {
         List<NekoCallback> callbackList = getCallbackList(path, false);
         if (null == callbackList) {
             return ;
@@ -84,9 +85,12 @@ public class NekoCallbackClientTracker {
         Iterator<NekoCallback> iter = callbackList.iterator();
         while (iter.hasNext()) {
             NekoCallback callback = iter.next();
+            log.log(Level.FINE, "checking " + callback.toString());
             if (!callback.isValid()) {
+                log.log(Level.FINE, "not valid");
                 iter.remove();
             } else {
+                log.log(Level.FINE, "valid, invoking");
                 callback.invoke(path, text, error);
             }
         }

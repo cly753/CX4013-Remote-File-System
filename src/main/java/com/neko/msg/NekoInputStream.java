@@ -18,22 +18,22 @@ public class NekoInputStream {
 
     public byte readOneByte() {
         if (cur + 1 > data.length) {
-            throw new InputMismatchException();
+            throw new InputMismatchException("No enough bytes to read");
         }
         byte ret = data[cur];
-        log.log(Level.FINE, String.format("data[%d]=0x%02X", cur, ret));
+        log.log(Level.FINEST, String.format("data[%d]=0x%02X", cur, ret));
         cur++;
         return ret;
     }
 
     public byte[] readBytes(int length) {
         if (cur + length > data.length) {
-            throw new InputMismatchException();
+            throw new InputMismatchException("No enough bytes to read");
         }
         byte[] ret = Arrays.copyOfRange(data, cur, cur + length);
 
         for (int i = 0; i < ret.length; i++) {
-            log.log(Level.FINE, String.format("ret[%d]=0x%02X", i, ret[i]));
+            log.log(Level.FINEST, String.format("ret[%d]=0x%02X", i, ret[i]));
         }
         cur += length;
         return ret;
@@ -42,7 +42,8 @@ public class NekoInputStream {
     public int readInt() {
         NekoDataType type = readDataType();
         if (type != NekoDataType.INTEGER) {
-            throw new InputMismatchException();
+            throw new InputMismatchException(
+                    "Try to read Integer while NekoDataType is not INTEGER");
         }
         return convertInt(readBytes(NekoIOConstants.INT_LENGTH));
     }
@@ -50,7 +51,8 @@ public class NekoInputStream {
     public String readString() {
         NekoDataType type = readDataType();
         if (type != NekoDataType.STRING) {
-            throw new InputMismatchException();
+            throw new InputMismatchException(
+                    "Try to read String while NekoDataType is not STRING");
         }
         int len = convertInt(readBytes(NekoIOConstants.INT_LENGTH));
         return convertString(readBytes(len));
@@ -70,14 +72,15 @@ public class NekoInputStream {
 
     public boolean hasNext() {
         if (cur >= data.length) {
-            throw new InputMismatchException();
+            throw new InputMismatchException("Byte pointer goes out of bound.");
         }
         return data[cur] != NekoIOConstants.EOF;
     }
 
     public static int convertInt(byte[] bytes) {
         if (bytes.length != NekoIOConstants.INT_LENGTH) {
-            throw new InputMismatchException();
+            throw new InputMismatchException(
+                    "Number of bytes provided does not match NekoIOConstants.INT_LENGTH");
         }
         int val = 0;
         for (int i = 0; i < NekoIOConstants.INT_LENGTH; i++) {
@@ -88,12 +91,13 @@ public class NekoInputStream {
                 val |= Byte.toUnsignedInt(bytes[NekoIOConstants.INT_LENGTH - 1 - i]);
             }
         }
-        log.log(Level.FINE, String.format("%d", val));
+        log.log(Level.FINEST, String.format("%d", val));
         return val;
     }
 
     public static String convertString(byte[] bytes) {
-        log.log(Level.FINE, String.format("%d %s", new String(bytes).length(), new String(bytes)));
+        log.log(Level.FINEST,
+                String.format("%d %s", new String(bytes).length(), new String(bytes)));
         return new String(bytes);
     }
 }

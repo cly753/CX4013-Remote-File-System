@@ -17,7 +17,7 @@ public class NekoByteBuffer {
 
     private int writeBytes(byte bByte) {
         if (1 + cur > data.length) {
-            throw new InputMismatchException();
+            throw new InputMismatchException("Internal byte array is full");
         }
         data[cur] = bByte;
         cur++;
@@ -26,7 +26,7 @@ public class NekoByteBuffer {
 
     private int writeBytes(byte[] bytes) {
         if (bytes.length + cur > data.length) {
-            throw new InputMismatchException();
+            throw new InputMismatchException("Internal byte array is full");
         }
         System.arraycopy(bytes, 0, data, cur, bytes.length);
         cur += bytes.length;
@@ -73,7 +73,7 @@ public class NekoByteBuffer {
      * It does not add extra attributes such as integer type.
      */
     private static byte[] getBytes(int val) {
-        log.log(Level.FINE, String.format("%d", val));
+        log.log(Level.FINEST, String.format("%d", val));
         byte[] ret = new byte[NekoIOConstants.INT_LENGTH];
         for (int i = 0; i < NekoIOConstants.INT_LENGTH; i++) {
             if (NekoIOConstants.BIG_ENDIAN) {
@@ -91,16 +91,18 @@ public class NekoByteBuffer {
      * It does not add extra attributes such as string type and string length.
      */
     private static byte[] getBytes(String string) {
-        log.log(Level.FINE, String.format("%d %s", string.length(), string));
+        log.log(Level.FINEST, String.format("%d %s", string.length(), string));
         return string.getBytes();
     }
 
     public static int sizeInByte(int val) {
-        return sizeInByte(NekoDataType.INTEGER) + NekoIOConstants.INT_LENGTH; // 1 byte for type + 4 byte for data
+        // 1 byte for type + 4 byte for data
+        return sizeInByte(NekoDataType.INTEGER) + NekoIOConstants.INT_LENGTH;
     }
 
     public static int sizeInByte(String string) {
-        return sizeInByte(NekoDataType.STRING) + NekoIOConstants.INT_LENGTH + string.length(); // 1 type + 4 byte for length + data
+        // 1 type + 4 byte for length + data
+        return sizeInByte(NekoDataType.STRING) + NekoIOConstants.INT_LENGTH + string.length();
     }
 
     public static int sizeInByte(NekoOpcode opcode) {

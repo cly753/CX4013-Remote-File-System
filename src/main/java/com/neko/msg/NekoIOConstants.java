@@ -1,7 +1,7 @@
 package com.neko.msg;
 
 public class NekoIOConstants {
-    private NekoIOConstants() {};
+    private NekoIOConstants() {}
 
     public static final int INT_LENGTH = 4;
 
