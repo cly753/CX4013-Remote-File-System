@@ -20,6 +20,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.channels.FileChannel;
+import java.util.HashMap;
 
 public class UDPServer {
 
@@ -28,6 +29,8 @@ public class UDPServer {
     public static final int MONITOR_CLIENT_PORT = 8888;
 
     private static final String COPY_POSTFIX = "_copy";
+    private static boolean AT_MOST_ONE = true; //true for AT_MOST_ONE, false for AT_LEAST_ONE
+    private static HashMap<String, NekoData> history = new HashMap<>();
 
     private static NekoCallbackClientTracker callbackClientTracker = new NekoCallbackClientTracker();
 
@@ -208,6 +211,11 @@ public class UDPServer {
     }
 
     public static void main(String[] args) {
+        if (args[0] == "1") {
+            AT_MOST_ONE = true;
+        } else {
+            AT_MOST_ONE = false;
+        }
         DatagramSocket socket = null;
         try {
             //bound to host and port
@@ -227,29 +235,36 @@ public class UDPServer {
 
                 NekoData respond = new NekoData();
 
-                switch (request.getOpcode()) {
-                    case READ:
-                        respond = handleRead(request.getPath(),
-                                request.getOffset(),
-                                request.getLength());
-                        break;
-                    case INSERT:
-                        respond = handleInsert(request.getPath(),
-                                request.getOffset(),
-                                request.getText());
-                        break;
-                    case MONITOR:
-                        respond = handleMonitor(requestPacket.getAddress(), request.getPath(), request.getInterval());
-                        break;
-                    case COPY:
-                        respond = handleCopy(request.getPath());
-                        break;
-                    case COUNT:
-                        respond = handleCount(request.getPath());
-                        break;
-                    default:
-                        // If the operation code is not defined, we just skip this request
-                        continue;
+                if (AT_MOST_ONE) {
+                    String requestId = request.getRequestId();
+                    if (history.containsKey(requestId)) {
+                        respond = history.get(requestId);
+                    } else {
+                        switch (request.getOpcode()) {
+                            case READ:
+                                respond = handleRead(request.getPath(),
+                                        request.getOffset(),
+                                        request.getLength());
+                                break;
+                            case INSERT:
+                                respond = handleInsert(request.getPath(),
+                                        request.getOffset(),
+                                        request.getText());
+                                break;
+                            case MONITOR:
+                                respond = handleMonitor(requestPacket.getAddress(), request.getPath(), request.getInterval());
+                                break;
+                            case COPY:
+                                respond = handleCopy(request.getPath());
+                                break;
+                            case COUNT:
+                                respond = handleCount(request.getPath());
+                                break;
+                            default:
+                                // If the operation code is not defined, we just skip this request
+                                continue;
+                        }
+                    }
                 }
 
                 byte[] respondBytes = serializer.serialize(respond).toBytes();
