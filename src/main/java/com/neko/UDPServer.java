@@ -59,11 +59,20 @@ public class UDPServer {
 
     private static NekoData handleInsert(String path, Integer offset, String text) {
         NekoData res = new NekoData();
-        RandomAccessFile raf = null;
+
+        File file = new File(path);
+        FileInputStream fis = null;
+        FileOutputStream fos = null;
         try {
-            raf = new RandomAccessFile(path, "rw");
-            raf.seek(offset);
-            raf.writeChars(text);
+            fis = new FileInputStream(file);
+            byte[] data = new byte[(int) file.length()];
+            fis.read(data);
+
+            String oldtext = new String(data, "UTF-8");
+            String newText = text.substring(0, offset) + oldtext + text.substring(offset);
+
+            fos = new FileOutputStream(file, false); // false to overwrite.
+            fos.write(newText.getBytes());
         } catch (FileNotFoundException e) {
             String errorMessage = "Unable to open file '" + path + "'";
             System.out.println(errorMessage);
@@ -78,8 +87,11 @@ public class UDPServer {
             return res;
         } finally {
             try {
-                if (raf != null) {
-                    raf.close();
+                if (fis != null) {
+                    fis.close();
+                }
+                if (fos != null) {
+                    fos.close();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
