@@ -8,6 +8,7 @@ import com.neko.monitor.NekoCallbackClientTracker;
 import com.neko.msg.NekoData;
 import com.neko.msg.NekoDeserializer;
 import com.neko.msg.NekoSerializer;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,8 +22,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.channels.FileChannel;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class UDPServer {
+    private static final Logger log = Logger.getLogger(UDPServer.class.getName());
 
     public static final int SERVER_PORT = 6789;
     public static final int BUFFER_SIZE = 1000;
@@ -72,43 +76,17 @@ public class UDPServer {
         NekoData res = new NekoData();
 
         File file = new File(path);
-        FileInputStream fis = null;
-        FileOutputStream fos = null;
         try {
-            fis = new FileInputStream(file);
-            byte[] data = new byte[(int) file.length()];
-            fis.read(data);
-
-            String oldtext = new String(data, "UTF-8");
+            String oldtext = FileUtils.readFileToString(file);
             String newText = oldtext.substring(0, offset) + text + oldtext.substring(offset);
-
-            fos = new FileOutputStream(file, false); // false to overwrite.
-            fos.write(newText.getBytes());
+            FileUtils.writeStringToFile(file, newText);
 
             callbackClientTracker.informUpdate(path, null);
-        } catch (FileNotFoundException e) {
-            String errorMessage = "Unable to open file '" + path + "'";
-            System.out.println(errorMessage);
-            res.setOpcode(ERROR);
-            res.setError(errorMessage);
-            return res;
         } catch (IOException e) {
-            String errorMessage = "Error writing file '" + path + "'";
-            System.out.println(errorMessage);
+            log.log(Level.WARNING, e.getMessage());
             res.setOpcode(ERROR);
-            res.setError(errorMessage);
+            res.setError(e.getMessage());
             return res;
-        } finally {
-            try {
-                if (fis != null) {
-                    fis.close();
-                }
-                if (fos != null) {
-                    fos.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
         res.setOpcode(RESULT);
         return res;
