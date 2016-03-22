@@ -80,7 +80,14 @@ public class UDPServer {
             fis.read(data);
 
             String oldtext = new String(data, "UTF-8");
-            String newText = text.substring(0, offset) + oldtext + text.substring(offset);
+            String newText;
+            if (offset == 0) {
+                newText = text + oldtext;
+            } else if (offset > text.length()) {
+                newText = oldtext + text;
+            } else {
+                newText = text.substring(0, offset) + oldtext + text.substring(offset);
+            }
 
             fos = new FileOutputStream(file, false); // false to overwrite.
             fos.write(newText.getBytes());
@@ -235,35 +242,32 @@ public class UDPServer {
 
                 NekoData respond = new NekoData();
 
-                if (AT_MOST_ONE) {
-                    String requestId = request.getRequestId();
-                    if (history.containsKey(requestId)) {
-                        respond = history.get(requestId);
-                    } else {
-                        switch (request.getOpcode()) {
-                            case READ:
-                                respond = handleRead(request.getPath(),
-                                        request.getOffset(),
-                                        request.getLength());
-                                break;
-                            case INSERT:
-                                respond = handleInsert(request.getPath(),
-                                        request.getOffset(),
-                                        request.getText());
-                                break;
-                            case MONITOR:
-                                respond = handleMonitor(requestPacket.getAddress(), request.getPath(), request.getInterval());
-                                break;
-                            case COPY:
-                                respond = handleCopy(request.getPath());
-                                break;
-                            case COUNT:
-                                respond = handleCount(request.getPath());
-                                break;
-                            default:
-                                // If the operation code is not defined, we just skip this request
-                                continue;
-                        }
+                if (AT_MOST_ONE && history.containsKey(request.getRequestId())) {
+                    respond = history.get(request.getRequestId());
+                } else {
+                    switch (request.getOpcode()) {
+                        case READ:
+                            respond = handleRead(request.getPath(),
+                                    request.getOffset(),
+                                    request.getLength());
+                            break;
+                        case INSERT:
+                            respond = handleInsert(request.getPath(),
+                                    request.getOffset(),
+                                    request.getText());
+                            break;
+                        case MONITOR:
+                            respond = handleMonitor(requestPacket.getAddress(), request.getPath(), request.getInterval());
+                            break;
+                        case COPY:
+                            respond = handleCopy(request.getPath());
+                            break;
+                        case COUNT:
+                            respond = handleCount(request.getPath());
+                            break;
+                        default:
+                            // If the operation code is not defined, we just skip this request
+                            continue;
                     }
                 }
 
