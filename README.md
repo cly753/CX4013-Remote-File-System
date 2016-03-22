@@ -65,6 +65,18 @@ $ ./neko-file-system copy /home/andy/Documents/HelloWorld.txt
 $ ./neko-file-system count /home/andy/Documents
 ```
 
+Monitor examples:
+
+```Shell
+# Run the following command in a terminal
+# The command will monitor the specific file for 10 second at port 8888
+# the --port option is for the client to send the datagram packet to server
+$ ./neko-file-system monitor --time 10000 --debug /Users/andyccs/Documents/hello.txt
+
+# Run the following command in another terminal
+$ ./neko-file-system insert -o 0 --text "hello world\n" /Users/andyccs/Documents/hello.txt
+```
+
 # Getting Started
 
 First, get an IDE (IntelliJ or Eclipse) and import this project using Gradle. 

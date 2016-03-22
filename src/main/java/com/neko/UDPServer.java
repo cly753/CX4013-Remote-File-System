@@ -211,7 +211,7 @@ public class UDPServer {
     }
 
     public static void main(String[] args) {
-        if (args[0] == "1") {
+        if (args.length > 0 && args[0].equals("1")) {
             AT_MOST_ONE = true;
         } else {
             AT_MOST_ONE = false;
@@ -235,35 +235,33 @@ public class UDPServer {
 
                 NekoData respond = new NekoData();
 
-                if (AT_MOST_ONE) {
-                    String requestId = request.getRequestId();
-                    if (history.containsKey(requestId)) {
-                        respond = history.get(requestId);
-                    } else {
-                        switch (request.getOpcode()) {
-                            case READ:
-                                respond = handleRead(request.getPath(),
-                                        request.getOffset(),
-                                        request.getLength());
-                                break;
-                            case INSERT:
-                                respond = handleInsert(request.getPath(),
-                                        request.getOffset(),
-                                        request.getText());
-                                break;
-                            case MONITOR:
-                                respond = handleMonitor(requestPacket.getAddress(), request.getPath(), request.getInterval());
-                                break;
-                            case COPY:
-                                respond = handleCopy(request.getPath());
-                                break;
-                            case COUNT:
-                                respond = handleCount(request.getPath());
-                                break;
-                            default:
-                                // If the operation code is not defined, we just skip this request
-                                continue;
-                        }
+                String requestId = request.getRequestId();
+                if (AT_MOST_ONE && history.containsKey(requestId)) {
+                    respond = history.get(requestId);
+                } else {
+                    switch (request.getOpcode()) {
+                        case READ:
+                            respond = handleRead(request.getPath(),
+                                    request.getOffset(),
+                                    request.getLength());
+                            break;
+                        case INSERT:
+                            respond = handleInsert(request.getPath(),
+                                    request.getOffset(),
+                                    request.getText());
+                            break;
+                        case MONITOR:
+                            respond = handleMonitor(requestPacket.getAddress(), request.getPath(), request.getInterval());
+                            break;
+                        case COPY:
+                            respond = handleCopy(request.getPath());
+                            break;
+                        case COUNT:
+                            respond = handleCount(request.getPath());
+                            break;
+                        default:
+                            // If the operation code is not defined, we just skip this request
+                            continue;
                     }
                 }
 

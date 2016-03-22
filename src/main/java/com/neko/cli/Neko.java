@@ -3,8 +3,11 @@ package com.neko.cli;
 import static com.neko.msg.NekoOpcode.COPY;
 import static com.neko.msg.NekoOpcode.COUNT;
 import static com.neko.msg.NekoOpcode.INSERT;
+import static com.neko.msg.NekoOpcode.MONITOR;
 import static com.neko.msg.NekoOpcode.READ;
 
+import com.neko.monitor.NekoCallback;
+import com.neko.monitor.NekoCallbackServer;
 import com.neko.msg.NekoData;
 import com.neko.msg.NekoDeserializer;
 import com.neko.msg.NekoSerializer;
@@ -22,6 +25,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -66,6 +70,11 @@ public class Neko {
     private static Option help = new Option("h", "help", false, "print this message");
     private static Option debug = new Option("d", "debug", false, "print debug message");
     private static Option verbose = new Option("v", "verbose", false, "print verbose message");
+    private static Option portOption = OptionBuilder.withLongOpt("port")
+        .withDescription("client datagram port")
+        .hasArg()
+        .withType(Integer.class)
+        .create();
 
     private static Options options = new Options();
     private static Options readOptions = new Options();
@@ -81,26 +90,33 @@ public class Neko {
 
         readOptions.addOption(readOffsetOption);
         readOptions.addOption(byteOption);
+        readOptions.addOption(portOption);
         readOptions.addOption(debug);
         readOptions.addOption(verbose);
 
         insertOptions.addOption(insertOffsetOption);
         insertOptions.addOption(textOption);
+        insertOptions.addOption(portOption);
         insertOptions.addOption(debug);
         insertOptions.addOption(verbose);
 
         monitorOptions.addOption(timeOption);
+        monitorOptions.addOption(portOption);
         monitorOptions.addOption(debug);
         monitorOptions.addOption(verbose);
 
+        copyOptions.addOption(portOption);
         copyOptions.addOption(debug);
         copyOptions.addOption(verbose);
 
+        countOptions.addOption(portOption);
         countOptions.addOption(debug);
         countOptions.addOption(verbose);
 
         log.setLevel(Level.WARNING);
     }
+
+    private static final String REQUEST_ID = String.valueOf(System.currentTimeMillis());
 
     public static void main(String[] args) {
         if (args.length == 0) {
@@ -135,10 +151,12 @@ public class Neko {
                         showHelps();
                         break;
                 }
-            } catch (IOException exception) {
+            } catch (SocketException exception) {
                 log.log(Level.WARNING, "Error: " + exception.getMessage());
                 log.log(Level.INFO, "Resending command");
                 continue;
+            } catch (IOException exception) {
+                log.log(Level.WARNING, "Error: " + exception.getMessage());
             }
             break;
         }
@@ -149,6 +167,7 @@ public class Neko {
         try {
             CommandLine line = parser.parse(readOptions, commandArgs);
             setLoggerLevel(line);
+            setDatagramPort(line);
 
             String filePath = getFilePath(line.getArgs());
 
@@ -158,7 +177,7 @@ public class Neko {
 
             NekoData request = new NekoData();
             request.setOpcode(READ);
-            request.setRequestId(String.valueOf(System.currentTimeMillis()));
+            request.setRequestId(REQUEST_ID);
             request.setPath(filePath);
             request.setOffset(Integer.parseInt(line.getOptionValue("o")));
             request.setLength(Integer.parseInt(line.getOptionValue("b")));
@@ -177,6 +196,7 @@ public class Neko {
         try {
             CommandLine line = parser.parse(insertOptions, commandArgs);
             setLoggerLevel(line);
+            setDatagramPort(line);
 
             String filePath = getFilePath(line.getArgs());
 
@@ -186,7 +206,7 @@ public class Neko {
 
             NekoData request = new NekoData();
             request.setOpcode(INSERT);
-            request.setRequestId(String.valueOf(System.currentTimeMillis()));
+            request.setRequestId(REQUEST_ID);
             request.setPath(filePath);
             request.setOffset(Integer.parseInt(line.getOptionValue("o")));
             request.setText(StringEscapeUtils.unescapeJava(line.getOptionValue("text")));
@@ -205,12 +225,38 @@ public class Neko {
         try {
             CommandLine line = parser.parse(monitorOptions, commandArgs);
             setLoggerLevel(line);
+            setDatagramPort(line);
 
             String filePath = getFilePath(line.getArgs());
+            Integer timeInterval = Integer.parseInt(line.getOptionValue("time"));
 
             // TODO(andyccs): monitor logic here
             log.log(Level.INFO, "file path: " + filePath);
-            log.log(Level.INFO, "time: " + Integer.parseInt(line.getOptionValue("time")));
+            log.log(Level.INFO, "time: " + timeInterval);
+
+            NekoData request = new NekoData();
+            request.setOpcode(MONITOR);
+            request.setRequestId(REQUEST_ID);
+            request.setPath(filePath);
+            request.setInterval(timeInterval);
+
+            String respond = sendBytes(request);
+            log.log(Level.INFO, "respond:" + respond);
+
+            log.log(Level.INFO, "Start listening for changes");
+            NekoCallback callback = new NekoCallback() {
+                @Override
+                public void invoke(String path, String text, String error) {
+                    System.out.println("The path is updated.");
+                }
+
+                @Override
+                public boolean isValid() {
+                    return true;
+                }
+            };
+            NekoCallbackServer callbackServer = new NekoCallbackServer(8888, 5000, callback);
+            callbackServer.start(timeInterval);
 
         } catch (ParseException exp) {
             log.log(Level.WARNING, "Error: " + exp.getMessage());
@@ -224,13 +270,14 @@ public class Neko {
         try {
             CommandLine line = parser.parse(copyOptions, commandArgs);
             setLoggerLevel(line);
+            setDatagramPort(line);
 
             String filePath = getFilePath(line.getArgs());
 
             log.log(Level.INFO, "file path: " + filePath);
 
             NekoData request = new NekoData();
-            request.setRequestId(String.valueOf(System.currentTimeMillis()));
+            request.setRequestId(REQUEST_ID);
             request.setOpcode(COPY);
             request.setPath(filePath);
 
@@ -248,13 +295,14 @@ public class Neko {
         try {
             CommandLine line = parser.parse(countOptions, commandArgs);
             setLoggerLevel(line);
+            setDatagramPort(line);
 
             String filePath = getFilePath(line.getArgs());
 
             log.log(Level.INFO, "file path: " + filePath);
 
             NekoData request = new NekoData();
-            request.setRequestId(String.valueOf(System.currentTimeMillis()));
+            request.setRequestId(REQUEST_ID);
             request.setOpcode(COUNT);
             request.setPath(filePath);
 
@@ -276,10 +324,16 @@ public class Neko {
     }
 
     private static void setLoggerLevel(CommandLine line) {
-        if (line.hasOption("d")) {
+        if (line.hasOption(debug.getOpt())) {
             log.setLevel(Level.INFO);
-        } else if (line.hasOption("v")) {
+        } else if (line.hasOption(verbose.getOpt())) {
             log.setLevel(Level.ALL);
+        }
+    }
+
+    private static void setDatagramPort(CommandLine line) {
+        if (line.hasOption(portOption.getLongOpt())) {
+            DATAGRAM_PORT = Integer.parseInt(line.getOptionValue(portOption.getLongOpt()));
         }
     }
 
@@ -304,9 +358,9 @@ public class Neko {
         formatter.printHelp("neko " + command + " [ARGS] <path>", options);
     }
 
-    private static String hostname = "localhost";
-    private static int port = 6789;
-    public static final int DATAGRAM_PORT = 2244;
+    private static final String hostname = "localhost";
+    private static final int port = 6789;
+    public static int DATAGRAM_PORT = 2244;
 
     private static String sendBytes(NekoData request) throws IOException {
         NekoSerializer serializer = new NekoSerializer();
@@ -328,6 +382,7 @@ public class Neko {
         byte[] buffer = new byte[5000];
         DatagramPacket replyPacket = new DatagramPacket(buffer, buffer.length);
         socket.receive(replyPacket);
+        socket.close();
 
         // Deserialize the respond
         NekoDeserializer deserializer = new NekoDeserializer();
