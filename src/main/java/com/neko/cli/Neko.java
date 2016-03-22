@@ -71,10 +71,10 @@ public class Neko {
     private static Option debug = new Option("d", "debug", false, "print debug message");
     private static Option verbose = new Option("v", "verbose", false, "print verbose message");
     private static Option portOption = OptionBuilder.withLongOpt("port")
-        .withDescription("client datagram port")
-        .hasArg()
-        .withType(Integer.class)
-        .create();
+            .withDescription("client datagram port")
+            .hasArg()
+            .withType(Integer.class)
+            .create();
 
     private static Options options = new Options();
     private static Options readOptions = new Options();
@@ -129,7 +129,7 @@ public class Neko {
         String[] commandArgs = new String[args.length - 1];
         System.arraycopy(args, 1, commandArgs, 0, commandArgs.length);
 
-        while(true) {
+        while (true) {
             try {
                 switch (command) {
                     case "read":

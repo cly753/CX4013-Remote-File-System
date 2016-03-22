@@ -2,6 +2,7 @@ package com.neko;
 
 import static com.neko.msg.NekoOpcode.ERROR;
 import static com.neko.msg.NekoOpcode.RESULT;
+import static org.apache.commons.io.FileUtils.readFileToString;
 
 import com.neko.monitor.NekoCallbackClient;
 import com.neko.monitor.NekoCallbackClientTracker;
@@ -28,15 +29,35 @@ import java.util.logging.Logger;
 public class UDPServer {
     private static final Logger log = Logger.getLogger(UDPServer.class.getName());
 
-    public static final int SERVER_PORT = 6789;
-    public static final int BUFFER_SIZE = 1000;
-    public static final int MONITOR_CLIENT_PORT = 8888;
+    private static final int SERVER_PORT = 6789;
+    private static final int BUFFER_SIZE = 1000;
+    private static final int MONITOR_CLIENT_PORT = 8888;
 
     private static final String COPY_POSTFIX = "_copy";
     private static boolean AT_MOST_ONE = true; //true for AT_MOST_ONE, false for AT_LEAST_ONE
     private static HashMap<String, NekoData> history = new HashMap<>();
 
-    private static NekoCallbackClientTracker callbackClientTracker = new NekoCallbackClientTracker();
+    private static NekoCallbackClientTracker callbackClientTracker =
+            new NekoCallbackClientTracker();
+
+    private static NekoData handleRead(String path) {
+        File file = new File(path);
+        String text = null;
+        try {
+            text = FileUtils.readFileToString(file);
+        } catch (IOException e) {
+            log.log(Level.WARNING, e.getMessage());
+
+            NekoData errorRespond = new NekoData();
+            errorRespond.setOpcode(ERROR);
+            errorRespond.setError(e.getMessage());
+            return errorRespond;
+        }
+        NekoData respond = new NekoData();
+        respond.setOpcode(RESULT);
+        respond.setText(text);
+        return respond;
+    }
 
     private static NekoData handleRead(String path, Integer offset, Integer length) {
         NekoData res = new NekoData();
@@ -47,16 +68,14 @@ public class UDPServer {
             raf.seek(offset);
             raf.read(inputBuffer);
         } catch (FileNotFoundException e) {
-            String errorMessage = "Unable to open file '" + path + "'";
-            System.out.println(errorMessage);
+            log.log(Level.WARNING, e.getMessage());
             res.setOpcode(ERROR);
-            res.setError(errorMessage);
+            res.setError(e.getMessage());
             return res;
         } catch (IOException e) {
-            String errorMessage = "Error reading file '" + path + "'";
-            System.out.println(errorMessage);
+            log.log(Level.WARNING, e.getMessage());
             res.setOpcode(ERROR);
-            res.setError(errorMessage);
+            res.setError(e.getMessage());
             return res;
         } finally {
             try {
@@ -77,7 +96,7 @@ public class UDPServer {
 
         File file = new File(path);
         try {
-            String oldtext = FileUtils.readFileToString(file);
+            String oldtext = readFileToString(file);
             String newText = oldtext.substring(0, offset) + text + oldtext.substring(offset);
             FileUtils.writeStringToFile(file, newText);
 
@@ -98,7 +117,8 @@ public class UDPServer {
 
         try {
             long validUntil = System.currentTimeMillis() + interval;
-            NekoCallbackClient client = new NekoCallbackClient(address, MONITOR_CLIENT_PORT, validUntil);
+            NekoCallbackClient client =
+                    new NekoCallbackClient(address, MONITOR_CLIENT_PORT, validUntil);
             callbackClientTracker.register(path, client);
 
             // TODO
@@ -115,11 +135,11 @@ public class UDPServer {
     }
 
     private static String getCopyPath(String path) {
-        int p = path.lastIndexOf('.');
-        if (p == -1) {
+        int position = path.lastIndexOf('.');
+        if (position == -1) {
             return path + COPY_POSTFIX;
         }
-        return path.substring(0,p) + COPY_POSTFIX + path.substring(p);
+        return path.substring(0, position) + COPY_POSTFIX + path.substring(position);
     }
 
     private static NekoData handleCopy(String path) {
@@ -134,7 +154,7 @@ public class UDPServer {
         try {
             copyPath = getCopyPath(path);
             File destFile = new File(copyPath);
-            while(destFile.exists()) {
+            while (destFile.exists()) {
                 copyPath = getCopyPath(copyPath);
                 destFile = new File(copyPath);
             }
@@ -190,11 +210,7 @@ public class UDPServer {
     }
 
     public static void main(String[] args) {
-        if (args.length > 0 && args[0].equals("1")) {
-            AT_MOST_ONE = true;
-        } else {
-            AT_MOST_ONE = false;
-        }
+        AT_MOST_ONE = args.length > 0 && args[0].equals("1");
         DatagramSocket socket = null;
         try {
             //bound to host and port
@@ -212,7 +228,7 @@ public class UDPServer {
 
                 NekoData request = deserializer.deserialize(requestPacket.getData());
 
-                NekoData respond = new NekoData();
+                NekoData respond;
 
                 String requestId = request.getRequestId();
                 if (AT_MOST_ONE && history.containsKey(requestId)) {
@@ -220,9 +236,13 @@ public class UDPServer {
                 } else {
                     switch (request.getOpcode()) {
                         case READ:
-                            respond = handleRead(request.getPath(),
-                                    request.getOffset(),
-                                    request.getLength());
+                            if (request.getOffset() == null && request.getLength() == null) {
+                                respond = handleRead(request.getPath());
+                            } else {
+                                respond = handleRead(request.getPath(),
+                                        request.getOffset(),
+                                        request.getLength());
+                            }
                             break;
                         case INSERT:
                             respond = handleInsert(request.getPath(),
@@ -230,7 +250,9 @@ public class UDPServer {
                                     request.getText());
                             break;
                         case MONITOR:
-                            respond = handleMonitor(requestPacket.getAddress(), request.getPath(), request.getInterval());
+                            respond = handleMonitor(requestPacket.getAddress(),
+                                    request.getPath(),
+                                    request.getInterval());
                             break;
                         case COPY:
                             respond = handleCopy(request.getPath());
