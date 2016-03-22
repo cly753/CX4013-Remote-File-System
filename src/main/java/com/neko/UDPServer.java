@@ -80,7 +80,7 @@ public class UDPServer {
             fis.read(data);
 
             String oldtext = new String(data, "UTF-8");
-            String newText = text.substring(0, offset) + oldtext + text.substring(offset);
+            String newText = oldtext.substring(0, offset) + text + oldtext.substring(offset);
 
             fos = new FileOutputStream(file, false); // false to overwrite.
             fos.write(newText.getBytes());
