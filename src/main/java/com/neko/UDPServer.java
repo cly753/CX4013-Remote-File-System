@@ -119,7 +119,8 @@ public class UDPServer {
         res.setOpcode(RESULT);
 
         try {
-            NekoCallbackClient client = new NekoCallbackClient(address, MONITOR_CLIENT_PORT, interval);
+            long validUntil = System.currentTimeMillis() + interval;
+            NekoCallbackClient client = new NekoCallbackClient(address, MONITOR_CLIENT_PORT, validUntil);
             callbackClientTracker.register(path, client);
 
             // TODO

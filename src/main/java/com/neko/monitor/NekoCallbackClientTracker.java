@@ -33,6 +33,7 @@ public class NekoCallbackClientTracker {
             }
         }
         callbackList.add(callback);
+        log.log(Level.FINE, "callback: " + callback);
     }
 
     /**
@@ -83,6 +84,7 @@ public class NekoCallbackClientTracker {
      * Updated content is "text", error is "error".
      */
     public void informUpdate(String path, String text, String error) {
+        log.log(Level.FINE, "path: " + path + ", text: " + text + ", error: " + error);
         List<NekoCallback> callbackList = getCallbackList(path, false);
         if (null == callbackList) {
             return;
