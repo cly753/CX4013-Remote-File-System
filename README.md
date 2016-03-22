@@ -70,7 +70,6 @@ Monitor examples:
 ```Shell
 # Run the following command in a terminal
 # The command will monitor the specific file for 10 second at port 8888
-# the --port option is for the client to send the datagram packet to server
 $ ./neko-file-system monitor --time 10000 --debug /Users/andyccs/Documents/hello.txt
 
 # Run the following command in another terminal
