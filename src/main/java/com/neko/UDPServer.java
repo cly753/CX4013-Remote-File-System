@@ -1,6 +1,7 @@
 package com.neko;
 
 import static com.neko.msg.NekoOpcode.ERROR;
+import static com.neko.msg.NekoOpcode.LAST_MODIFIED;
 import static com.neko.msg.NekoOpcode.RESULT;
 import static org.apache.commons.io.FileUtils.readFileToString;
 
@@ -210,6 +211,22 @@ public class UDPServer {
         return res;
     }
 
+    private static NekoData handleLastModified(String path) {
+        File file = new File(path);
+        NekoData respond = new NekoData();
+        if (!file.exists()) {
+            respond.setOpcode(ERROR);
+            String errorMessage = path + " does not exists";
+            System.out.println(errorMessage);
+            respond.setError(errorMessage);
+            return respond;
+        }
+
+        respond.setOpcode(LAST_MODIFIED);
+        respond.setLastModified(String.valueOf(file.lastModified()));
+        return respond;
+    }
+
     public static void main(String[] args) {
         AT_MOST_ONE = args.length > 0 && args[0].equals("1");
         DatagramSocket socket = null;
@@ -260,6 +277,9 @@ public class UDPServer {
                             break;
                         case COUNT:
                             respond = handleCount(request.getPath());
+                            break;
+                        case LAST_MODIFIED:
+                            respond = handleLastModified(request.getPath());
                             break;
                         default:
                             // If the operation code is not defined, we just skip this request

@@ -3,6 +3,7 @@ package com.neko.cli;
 import static com.neko.msg.NekoOpcode.COPY;
 import static com.neko.msg.NekoOpcode.COUNT;
 import static com.neko.msg.NekoOpcode.INSERT;
+import static com.neko.msg.NekoOpcode.LAST_MODIFIED;
 import static com.neko.msg.NekoOpcode.MONITOR;
 import static com.neko.msg.NekoOpcode.READ;
 
@@ -213,7 +214,7 @@ public class Neko {
             log.fine("File not fresh, read last modified from server");
             // TODO(andyccs): fetch last modified from server efficiently
             NekoData request = new NekoData();
-            request.setOpcode(READ);
+            request.setOpcode(LAST_MODIFIED);
             request.setRequestId(REQUEST_ID_2);
             request.setPath(filePath);
             NekoData respond = sendBytes(request);
