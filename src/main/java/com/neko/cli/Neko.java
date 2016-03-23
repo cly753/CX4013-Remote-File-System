@@ -170,14 +170,11 @@ public class Neko {
         }
     }
 
-    private static NekoCache cache;
-
     // TODO(andyccs): receive this input from user
     private static long freshnessInterval = 10000L;
 
     private static void read(String[] commandArgs) throws IOException {
-        // TODO(andyccs): change it to load cache from a file
-        cache = new NekoCache(".nekocache");
+        NekoCache cache = new NekoCache(".nekocache");
 
         CommandLineParser parser = new DefaultParser();
         try {
@@ -208,12 +205,12 @@ public class Neko {
                     - cachedFileMetadata.getLastValidation() < freshnessInterval) {
                 log.fine("File still fresh, read from cache");
 
-                // TODO(andyccs): read cache
-                String text = cache.read(filePath, offset, length);
+                String text = cache.read(filePath);
                 log.info(nekoSubstring(offset, length, text));
                 return;
             }
 
+            log.fine("File not fresh, read last modified from server");
             // TODO(andyccs): fetch last modified from server efficiently
             NekoData request = new NekoData();
             request.setOpcode(READ);
@@ -226,13 +223,11 @@ public class Neko {
                 log.fine("Server file not modified, read from cache");
 
                 cachedFileMetadata.setLastValidation(System.currentTimeMillis());
-                // TODO(andyccs): read cache
-                String text = cache.read(filePath, offset, length);
+                String text = cache.read(filePath);
                 log.info(nekoSubstring(offset, length, text));
             } else {
                 log.fine("Server file modified, read from server and cache");
 
-                // TODO(andyccs): remove cache
                 cache.remove(filePath);
 
                 NekoData respond2 = readFromServer(filePath, offset, length);
@@ -264,9 +259,7 @@ public class Neko {
     }
 
     private static String nekoSubstring(int offset, int length, String fullText) {
-        int startIndex = offset;
-        int endIndex = offset + length;
-        return fullText.substring(startIndex, endIndex);
+        return fullText.substring(offset, offset + length);
     }
 
     private static void insert(String[] commandArgs) throws IOException {
@@ -449,7 +442,7 @@ public class Neko {
 
     private static final String hostname = "localhost";
     private static final int port = 6789;
-    public static int DATAGRAM_PORT = 2244;
+    private static int DATAGRAM_PORT = 2244;
 
     private static NekoData sendBytes(NekoData request) throws IOException {
         NekoSerializer serializer = new NekoSerializer();
