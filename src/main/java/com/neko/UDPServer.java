@@ -42,7 +42,7 @@ public class UDPServer {
 
     private static NekoData handleRead(String path) {
         File file = new File(path);
-        String text = null;
+        String text;
         try {
             text = FileUtils.readFileToString(file);
         } catch (IOException e) {
@@ -56,6 +56,7 @@ public class UDPServer {
         NekoData respond = new NekoData();
         respond.setOpcode(RESULT);
         respond.setText(text);
+        respond.setLastModified(String.valueOf(file.lastModified()));
         return respond;
     }
 

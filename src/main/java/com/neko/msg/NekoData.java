@@ -24,6 +24,8 @@ public class NekoData {
     private Integer length;
     @NekoFieldAttribute(attribute = NekoAttribute.NUMBER, type = NekoDataType.INTEGER)
     private Integer number;
+    @NekoFieldAttribute(attribute = NekoAttribute.LAST_MODIFIED, type = NekoDataType.STRING)
+    private String lastModified;
     @NekoFieldAttribute(attribute = NekoAttribute.ERROR, type = NekoDataType.STRING)
     private String error;
 
@@ -66,6 +68,10 @@ public class NekoData {
         return number;
     }
 
+    public String getLastModified() {
+        return lastModified;
+    }
+
     public String getError() {
         return error;
     }
@@ -100,6 +106,10 @@ public class NekoData {
 
     public void setNumber(Integer number) {
         this.number = number;
+    }
+
+    public void setLastModified(String lastModified) {
+        this.lastModified = lastModified;
     }
 
     public void setError(String error) {
