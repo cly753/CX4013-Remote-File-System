@@ -120,13 +120,14 @@ public class NekoData {
     public String toString() {
         return "NekoData{"
                 + "opcode=" + opcode
-                + ", path='" + path + '\''
+                + ", path='" + path + "'"
                 + ", offset=" + offset
                 + ", interval=" + interval
-                + ", text='" + text + '\''
+                + ", text='" + text + "'"
                 + ", length=" + length
                 + ", number=" + number
-                + ", error='" + error + '\''
+                + ", error='" + error + "'"
+                + ", last_modified='" + lastModified + "'"
                 + '}';
     }
 }

@@ -49,6 +49,9 @@ public class NekoDeserializer {
                 case ERROR:
                     deserialized.setError(in.readString());
                     break;
+                case LAST_MODIFIED:
+                    deserialized.setLastModified(in.readString());
+                    break;
                 default:
                     throw new InputMismatchException("Unknown NekoAttribute");
             }

@@ -113,7 +113,7 @@ public class Neko {
         countOptions.addOption(debug);
         countOptions.addOption(verbose);
 
-        log.setLevel(Level.WARNING);
+        log.setLevel(Level.INFO);
     }
 
     private static final String REQUEST_ID = String.valueOf(System.currentTimeMillis());
@@ -171,19 +171,22 @@ public class Neko {
 
             String filePath = getFilePath(line.getArgs());
 
-            log.log(Level.INFO, "file path: " + filePath);
-            log.log(Level.INFO, "offset: " + Integer.parseInt(line.getOptionValue("o")));
-            log.log(Level.INFO, "byte: " + Integer.parseInt(line.getOptionValue("b")));
+            log.log(Level.FINE, "file path: " + filePath);
+            log.log(Level.FINE, "offset: " + Integer.parseInt(line.getOptionValue("o")));
+            log.log(Level.FINE, "byte: " + Integer.parseInt(line.getOptionValue("b")));
 
             NekoData request = new NekoData();
             request.setOpcode(READ);
             request.setRequestId(REQUEST_ID);
             request.setPath(filePath);
-            request.setOffset(Integer.parseInt(line.getOptionValue("o")));
-            request.setLength(Integer.parseInt(line.getOptionValue("b")));
 
-            String respond = sendBytes(request);
-            System.out.println(respond);
+            NekoData respond = sendBytes(request);
+
+            int startIndex = Integer.parseInt(line.getOptionValue("o"));
+            int endIndex = startIndex + Integer.parseInt(line.getOptionValue("b"));
+            String text = respond.getText().substring(startIndex, endIndex);
+            log.log(Level.INFO, text);
+            log.log(Level.FINE, respond.toString());
         } catch (ParseException exception) {
             log.log(Level.WARNING, "Error: " + exception.getMessage());
             showHelps(readOptions, "read");
@@ -200,9 +203,9 @@ public class Neko {
 
             String filePath = getFilePath(line.getArgs());
 
-            log.log(Level.INFO, "file path: " + filePath);
-            log.log(Level.INFO, "offset: " + Integer.parseInt(line.getOptionValue("o")));
-            log.log(Level.INFO, "text: " + line.getOptionValue("text"));
+            log.log(Level.FINE, "file path: " + filePath);
+            log.log(Level.FINE, "offset: " + Integer.parseInt(line.getOptionValue("o")));
+            log.log(Level.FINE, "text: " + line.getOptionValue("text"));
 
             NekoData request = new NekoData();
             request.setOpcode(INSERT);
@@ -211,8 +214,13 @@ public class Neko {
             request.setOffset(Integer.parseInt(line.getOptionValue("o")));
             request.setText(StringEscapeUtils.unescapeJava(line.getOptionValue("text")));
 
-            String respond = sendBytes(request);
-            System.out.println(respond);
+            NekoData respond = sendBytes(request);
+            if (respond.getError() == null) {
+                log.log(Level.INFO, "copy done");
+            } else {
+                log.log(Level.INFO, "Error: " + respond.getError());
+            }
+            log.log(Level.FINE, respond.toString());
         } catch (ParseException exception) {
             log.log(Level.WARNING, "Error: " + exception.getMessage());
             showHelps(insertOptions, "insert");
@@ -231,8 +239,8 @@ public class Neko {
             Integer timeInterval = Integer.parseInt(line.getOptionValue("time"));
 
             // TODO(andyccs): monitor logic here
-            log.log(Level.INFO, "file path: " + filePath);
-            log.log(Level.INFO, "time: " + timeInterval);
+            log.log(Level.FINE, "file path: " + filePath);
+            log.log(Level.FINE, "time: " + timeInterval);
 
             NekoData request = new NekoData();
             request.setOpcode(MONITOR);
@@ -240,14 +248,14 @@ public class Neko {
             request.setPath(filePath);
             request.setInterval(timeInterval);
 
-            String respond = sendBytes(request);
-            log.log(Level.INFO, "respond:" + respond);
+            NekoData respond = sendBytes(request);
+            log.log(Level.FINE, "respond:" + respond.toString());
 
             log.log(Level.INFO, "Start listening for changes");
             NekoCallback callback = new NekoCallback() {
                 @Override
                 public void invoke(String path, String text, String error) {
-                    System.out.println("The path is updated.");
+                    log.log(Level.INFO, "The path is updated.");
                 }
 
                 @Override
@@ -274,15 +282,20 @@ public class Neko {
 
             String filePath = getFilePath(line.getArgs());
 
-            log.log(Level.INFO, "file path: " + filePath);
+            log.log(Level.FINE, "file path: " + filePath);
 
             NekoData request = new NekoData();
             request.setRequestId(REQUEST_ID);
             request.setOpcode(COPY);
             request.setPath(filePath);
 
-            String respond = sendBytes(request);
-            System.out.println(respond);
+            NekoData respond = sendBytes(request);
+            if (respond.getError() == null) {
+                log.log(Level.INFO, "copy done");
+            } else {
+                log.log(Level.INFO, "Error: " + respond.getError());
+            }
+            log.log(Level.FINE, respond.toString());
         } catch (ParseException exception) {
             log.log(Level.WARNING, "Error: " + exception.getMessage());
             showHelps(copyOptions, "copy");
@@ -306,8 +319,9 @@ public class Neko {
             request.setOpcode(COUNT);
             request.setPath(filePath);
 
-            String respond = sendBytes(request);
-            System.out.println(respond);
+            NekoData respond = sendBytes(request);
+            log.log(Level.INFO, "count: " + respond.getNumber());
+            log.log(Level.FINE, respond.toString());
         } catch (ParseException exception) {
             log.log(Level.WARNING, "Error: " + exception.getMessage());
             showHelps(countOptions, "count");
@@ -325,7 +339,7 @@ public class Neko {
 
     private static void setLoggerLevel(CommandLine line) {
         if (line.hasOption(debug.getOpt())) {
-            log.setLevel(Level.INFO);
+            log.setLevel(Level.FINEST);
         } else if (line.hasOption(verbose.getOpt())) {
             log.setLevel(Level.ALL);
         }
@@ -362,7 +376,7 @@ public class Neko {
     private static final int port = 6789;
     public static int DATAGRAM_PORT = 2244;
 
-    private static String sendBytes(NekoData request) throws IOException {
+    private static NekoData sendBytes(NekoData request) throws IOException {
         NekoSerializer serializer = new NekoSerializer();
         byte[] requestBytes = serializer.serialize(request).toBytes();
 
@@ -386,7 +400,6 @@ public class Neko {
 
         // Deserialize the respond
         NekoDeserializer deserializer = new NekoDeserializer();
-        NekoData reply = deserializer.deserialize(replyPacket.getData());
-        return reply.toString();
+        return deserializer.deserialize(replyPacket.getData());
     }
 }
