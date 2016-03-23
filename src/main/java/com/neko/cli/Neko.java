@@ -70,6 +70,12 @@ public class Neko {
             .withType(Integer.class)
             .create();
 
+    private static Option freshnessOption = OptionBuilder.withLongOpt("fresh")
+            .withDescription("the freshness interval of cache")
+            .hasArg()
+            .withType(Long.class)
+            .create();
+
     private static Option help = new Option("h", "help", false, "print this message");
     private static Option debug = new Option("d", "debug", false, "print debug message");
     private static Option verbose = new Option("v", "verbose", false, "print verbose message");
@@ -93,6 +99,7 @@ public class Neko {
 
         readOptions.addOption(readOffsetOption);
         readOptions.addOption(byteOption);
+        readOptions.addOption(freshnessOption);
         readOptions.addOption(portOption);
         readOptions.addOption(debug);
         readOptions.addOption(verbose);
@@ -171,7 +178,6 @@ public class Neko {
         }
     }
 
-    // TODO(andyccs): receive this input from user
     private static long freshnessInterval = 10000L;
 
     private static void read(String[] commandArgs) throws IOException {
@@ -182,6 +188,12 @@ public class Neko {
             CommandLine line = parser.parse(readOptions, commandArgs);
             setLoggerLevel(line);
             setDatagramPort(line);
+
+            if (line.hasOption(freshnessOption.getLongOpt())) {
+                freshnessInterval = Long.parseLong(
+                    line.getOptionValue(freshnessOption.getLongOpt()));
+                log.fine("set freshness interval to " + freshnessInterval);
+            }
 
             String filePath = getFilePath(line.getArgs());
             int offset = Integer.parseInt(line.getOptionValue("o"));
@@ -212,7 +224,6 @@ public class Neko {
             }
 
             log.fine("File not fresh, read last modified from server");
-            // TODO(andyccs): fetch last modified from server efficiently
             NekoData request = new NekoData();
             request.setOpcode(LAST_MODIFIED);
             request.setRequestId(REQUEST_ID_2);
