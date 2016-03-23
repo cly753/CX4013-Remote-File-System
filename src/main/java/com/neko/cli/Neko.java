@@ -26,6 +26,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.HashMap;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -116,7 +118,8 @@ public class Neko {
         log.setLevel(Level.INFO);
     }
 
-    private static final String REQUEST_ID = String.valueOf(System.currentTimeMillis());
+    private static final String REQUEST_ID_1 = String.valueOf(System.currentTimeMillis());
+    private static final String REQUEST_ID_2 = REQUEST_ID_1 + 1;
 
     public static void main(String[] args) {
         if (args.length == 0) {
@@ -162,7 +165,15 @@ public class Neko {
         }
     }
 
+    private static NekoCache cache = new NekoCache(".nekocache");
+
+    // TODO(andyccs): receive this input from user
+    private static long freshnessInterval = 10000L;
+
     private static void read(String[] commandArgs) throws IOException {
+        // TODO(andyccs): change it to load cache from a file
+        cache.loadCacheData();
+
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine line = parser.parse(readOptions, commandArgs);
@@ -170,28 +181,86 @@ public class Neko {
             setDatagramPort(line);
 
             String filePath = getFilePath(line.getArgs());
+            int offset = Integer.parseInt(line.getOptionValue("o"));
+            int length = Integer.parseInt(line.getOptionValue("b"));
 
             log.log(Level.FINE, "file path: " + filePath);
-            log.log(Level.FINE, "offset: " + Integer.parseInt(line.getOptionValue("o")));
-            log.log(Level.FINE, "byte: " + Integer.parseInt(line.getOptionValue("b")));
+            log.log(Level.FINE, "offset: " + offset);
+            log.log(Level.FINE, "byte: " + length);
 
+            if (!cache.exist(filePath)) {
+                log.log(Level.FINE, "No cache available, read from server");
+                NekoData respond1 = readFromServer(filePath, offset, length);
+                cache.save(filePath,
+                        Long.parseLong(respond1.getLastModified()),
+                        System.currentTimeMillis(),
+                        respond1.getText());
+                return;
+            }
+
+            FileMetadata cachedFileMetadata = cache.readMetadata(filePath);
+            if (System.currentTimeMillis()
+                    - cachedFileMetadata.getLastValidation() < freshnessInterval) {
+                log.log(Level.FINE, "File still fresh, read from cache");
+                // TODO(andyccs): read cache
+                String text = cache.read(filePath, offset, length);
+                log.log(Level.INFO, nekoSubstring(offset, length, text));
+                return;
+            }
+
+            // TODO(andyccs): fetch last modified from server efficiently
             NekoData request = new NekoData();
             request.setOpcode(READ);
-            request.setRequestId(REQUEST_ID);
+            request.setRequestId(REQUEST_ID_2);
             request.setPath(filePath);
-
             NekoData respond = sendBytes(request);
+            Long serverLastModified = Long.parseLong(respond.getLastModified());
 
-            int startIndex = Integer.parseInt(line.getOptionValue("o"));
-            int endIndex = startIndex + Integer.parseInt(line.getOptionValue("b"));
-            String text = respond.getText().substring(startIndex, endIndex);
-            log.log(Level.INFO, text);
-            log.log(Level.FINE, respond.toString());
+            if (Objects.equals(cachedFileMetadata.getLastModified(), serverLastModified)) {
+                log.log(Level.FINE, "Server file not modified, read from cache");
+                cachedFileMetadata.setLastValidation(System.currentTimeMillis());
+                // TODO(andyccs): read cache
+                String text = cache.read(filePath, offset, length);
+                log.log(Level.INFO, nekoSubstring(offset, length, text));
+            } else {
+                log.log(Level.FINE, "Server file modified, read from server and cache");
+                // TODO(andyccs): remove cache
+                cache.remove(filePath);
+
+                NekoData respond2 = readFromServer(filePath, offset, length);
+                cache.save(filePath,
+                        Long.parseLong(respond2.getLastModified()),
+                        System.currentTimeMillis(),
+                        respond2.getText());
+            }
         } catch (ParseException exception) {
             log.log(Level.WARNING, "Error: " + exception.getMessage());
             showHelps(readOptions, "read");
             System.exit(-1);
         }
+    }
+
+    private static NekoData readFromServer(String filePath, int offset, int length)
+        throws IOException {
+        NekoData request = new NekoData();
+        request.setOpcode(READ);
+        request.setRequestId(REQUEST_ID_1);
+        request.setPath(filePath);
+
+        NekoData respond = sendBytes(request);
+        String fullText = respond.getText();
+
+        String text = nekoSubstring(offset, length, fullText);
+
+        log.log(Level.INFO, text);
+        log.log(Level.FINE, respond.toString());
+        return respond;
+    }
+
+    private static String nekoSubstring(int offset, int length, String fullText) {
+        int startIndex = offset;
+        int endIndex = offset + length;
+        return fullText.substring(startIndex, endIndex);
     }
 
     private static void insert(String[] commandArgs) throws IOException {
@@ -209,7 +278,7 @@ public class Neko {
 
             NekoData request = new NekoData();
             request.setOpcode(INSERT);
-            request.setRequestId(REQUEST_ID);
+            request.setRequestId(REQUEST_ID_1);
             request.setPath(filePath);
             request.setOffset(Integer.parseInt(line.getOptionValue("o")));
             request.setText(StringEscapeUtils.unescapeJava(line.getOptionValue("text")));
@@ -244,7 +313,7 @@ public class Neko {
 
             NekoData request = new NekoData();
             request.setOpcode(MONITOR);
-            request.setRequestId(REQUEST_ID);
+            request.setRequestId(REQUEST_ID_1);
             request.setPath(filePath);
             request.setInterval(timeInterval);
 
@@ -285,7 +354,7 @@ public class Neko {
             log.log(Level.FINE, "file path: " + filePath);
 
             NekoData request = new NekoData();
-            request.setRequestId(REQUEST_ID);
+            request.setRequestId(REQUEST_ID_1);
             request.setOpcode(COPY);
             request.setPath(filePath);
 
@@ -315,7 +384,7 @@ public class Neko {
             log.log(Level.INFO, "file path: " + filePath);
 
             NekoData request = new NekoData();
-            request.setRequestId(REQUEST_ID);
+            request.setRequestId(REQUEST_ID_1);
             request.setOpcode(COUNT);
             request.setPath(filePath);
 
