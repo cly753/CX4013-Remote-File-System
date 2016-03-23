@@ -251,10 +251,10 @@ public class Neko {
         request.setPath(filePath);
 
         NekoData respond = sendBytes(request);
-        String fullText = respond.getText();
-
-        log.info(nekoSubstring(offset, length, fullText));
         log.fine(respond.toString());
+
+        String fullText = respond.getText();
+        log.info(nekoSubstring(offset, length, fullText));
         return respond;
     }
 

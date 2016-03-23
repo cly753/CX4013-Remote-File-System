@@ -71,7 +71,7 @@ class NekoCache {
     }
 
     void remove(String filePath) {
-        File cacheFile = new File(filePath);
+        File cacheFile = new File(cacheDirectory + "/" + filePath);
         try {
             FileUtils.forceDelete(cacheFile);
 
