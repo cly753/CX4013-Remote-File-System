@@ -26,8 +26,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.HashMap;
 import java.util.Objects;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -116,6 +116,11 @@ public class Neko {
         countOptions.addOption(verbose);
 
         log.setLevel(Level.INFO);
+
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+        consoleHandler.setLevel(Level.ALL);
+
+        log.addHandler(consoleHandler);
     }
 
     private static final String REQUEST_ID_1 = String.valueOf(System.currentTimeMillis());
@@ -165,14 +170,14 @@ public class Neko {
         }
     }
 
-    private static NekoCache cache = new NekoCache(".nekocache");
+    private static NekoCache cache;
 
     // TODO(andyccs): receive this input from user
     private static long freshnessInterval = 10000L;
 
     private static void read(String[] commandArgs) throws IOException {
         // TODO(andyccs): change it to load cache from a file
-        cache.loadCacheData();
+        cache = new NekoCache(".nekocache");
 
         CommandLineParser parser = new DefaultParser();
         try {
@@ -184,12 +189,12 @@ public class Neko {
             int offset = Integer.parseInt(line.getOptionValue("o"));
             int length = Integer.parseInt(line.getOptionValue("b"));
 
-            log.log(Level.FINE, "file path: " + filePath);
-            log.log(Level.FINE, "offset: " + offset);
-            log.log(Level.FINE, "byte: " + length);
+            log.fine("file path: " + filePath);
+            log.fine("offset: " + offset);
+            log.fine("byte: " + length);
 
             if (!cache.exist(filePath)) {
-                log.log(Level.FINE, "No cache available, read from server");
+                log.fine("No cache available, read from server");
                 NekoData respond1 = readFromServer(filePath, offset, length);
                 cache.save(filePath,
                         Long.parseLong(respond1.getLastModified()),
@@ -201,10 +206,11 @@ public class Neko {
             FileMetadata cachedFileMetadata = cache.readMetadata(filePath);
             if (System.currentTimeMillis()
                     - cachedFileMetadata.getLastValidation() < freshnessInterval) {
-                log.log(Level.FINE, "File still fresh, read from cache");
+                log.fine("File still fresh, read from cache");
+
                 // TODO(andyccs): read cache
                 String text = cache.read(filePath, offset, length);
-                log.log(Level.INFO, nekoSubstring(offset, length, text));
+                log.info(nekoSubstring(offset, length, text));
                 return;
             }
 
@@ -217,13 +223,15 @@ public class Neko {
             Long serverLastModified = Long.parseLong(respond.getLastModified());
 
             if (Objects.equals(cachedFileMetadata.getLastModified(), serverLastModified)) {
-                log.log(Level.FINE, "Server file not modified, read from cache");
+                log.fine("Server file not modified, read from cache");
+
                 cachedFileMetadata.setLastValidation(System.currentTimeMillis());
                 // TODO(andyccs): read cache
                 String text = cache.read(filePath, offset, length);
-                log.log(Level.INFO, nekoSubstring(offset, length, text));
+                log.info(nekoSubstring(offset, length, text));
             } else {
-                log.log(Level.FINE, "Server file modified, read from server and cache");
+                log.fine("Server file modified, read from server and cache");
+
                 // TODO(andyccs): remove cache
                 cache.remove(filePath);
 
@@ -234,7 +242,7 @@ public class Neko {
                         respond2.getText());
             }
         } catch (ParseException exception) {
-            log.log(Level.WARNING, "Error: " + exception.getMessage());
+            log.warning("Error: " + exception.getMessage());
             showHelps(readOptions, "read");
             System.exit(-1);
         }
@@ -250,10 +258,8 @@ public class Neko {
         NekoData respond = sendBytes(request);
         String fullText = respond.getText();
 
-        String text = nekoSubstring(offset, length, fullText);
-
-        log.log(Level.INFO, text);
-        log.log(Level.FINE, respond.toString());
+        log.info(nekoSubstring(offset, length, fullText));
+        log.fine(respond.toString());
         return respond;
     }
 

@@ -1,42 +1,104 @@
 package com.neko.cli;
 
-import java.util.HashMap;
+import static org.apache.commons.io.FileUtils.readFileToString;
 
-/**
- * Created by andyccs on 23/3/16.
- */
-public class NekoCache {
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.logging.Logger;
+
+
+class NekoCache {
+    private static final Logger log = Logger.getLogger(NekoCache.class.getName());
+
     private static final String CACHE_DATA_FILE = ".cache_data.json";
 
-    private HashMap<String, FileMetadata> caches = new HashMap<>();
+    HashMap<String, FileMetadata> caches;
 
-    public NekoCache(String cacheDirectory) {
+    private String cacheDirectory;
+
+    public NekoCache() {
     }
 
-    public void loadCacheData() {
-
+    NekoCache(String cacheDirectory) {
+        this.cacheDirectory = cacheDirectory;
+        loadCacheData();
     }
 
-    public void save(String filePath,
+    private void loadCacheData() {
+        String cacheDataFilePath = FilenameUtils.normalize(cacheDirectory + "/" + CACHE_DATA_FILE);
+        File cacheDataFile = new File(cacheDataFilePath);
+        if (!cacheDataFile.exists()) {
+            caches = new HashMap<>();
+            return;
+        }
+
+        try {
+            String json = readFileToString(cacheDataFile);
+
+            Gson gson = new Gson();
+
+            Type hashMapType = new TypeToken<HashMap<String, FileMetadata>>(){}.getType();
+            caches = gson.fromJson(json, hashMapType);
+        } catch (IOException exception) {
+            log.warning(exception.getMessage());
+            caches = new HashMap<>();
+        }
+    }
+
+    void save(String filePath,
                      long lastModified,
                      long lastValidation,
                      String text) {
+        FileMetadata metadata = new FileMetadata();
+        metadata.setLastValidation(lastValidation);
+        metadata.setLastModified(lastModified);
+
+        caches.put(filePath, metadata);
+
+        log.fine("saving to cache");
+        String fullFilPath = FilenameUtils.normalize(cacheDirectory + "/" + filePath);
+        File cacheFile = new File(fullFilPath);
+        try {
+            FileUtils.write(cacheFile, text);
+
+            Gson gson = new Gson();
+            String json = gson.toJson(caches);
+
+            File cacheDataFile = new File(cacheDirectory + "/" + CACHE_DATA_FILE);
+            FileUtils.write(cacheDataFile, json);
+        } catch (IOException exception) {
+            log.warning(exception.getMessage());
+        }
+    }
+
+    void remove(String filePath) {
 
     }
 
-    public void remove(String filePath) {
-
+    FileMetadata readMetadata(String filePath) {
+        return caches.get(filePath);
     }
 
-    public FileMetadata readMetadata(String filePath) {
-        return null;
+    String read(String filePath, int offset, int length) throws IOException {
+        if (!exist(filePath)) {
+            return null;
+        }
+
+        File cacheFile = new File(cacheDirectory + "/" + filePath);
+        String text = FileUtils.readFileToString(cacheFile);
+        return text.substring(offset, offset + length);
     }
 
-    public String read(String filePath, int offset, int length) {
-        return "";
-    }
-
-    public boolean exist(String filePath) {
-        return false;
+    boolean exist(String filePath) {
+        return caches.containsKey(filePath);
     }
 }
