@@ -69,6 +69,20 @@ class NekoCache {
         }
     }
 
+    void updateLastValidation(String filePath, long lastValidation) {
+        if (!exist(filePath)) {
+            return;
+        }
+        log.fine("update last validation of " + filePath + " to " + lastValidation);
+        FileMetadata metadata = caches.get(filePath);
+        metadata.setLastValidation(lastValidation);
+        try {
+            saveCacheToFile();
+        } catch (IOException e) {
+            log.warning(e.getMessage());
+        }
+    }
+
     void remove(String filePath) {
         File cacheFile = new File(cacheDirectory + "/" + filePath);
         try {

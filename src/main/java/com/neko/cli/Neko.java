@@ -233,8 +233,7 @@ public class Neko {
 
             if (Objects.equals(cachedFileMetadata.getLastModified(), serverLastModified)) {
                 log.fine("Server file not modified, read from cache");
-
-                cachedFileMetadata.setLastValidation(System.currentTimeMillis());
+                cache.updateLastValidation(filePath, System.currentTimeMillis());
                 String text = cache.read(filePath);
                 log.info(nekoSubstring(offset, length, text));
             } else {
