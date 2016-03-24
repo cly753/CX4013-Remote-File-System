@@ -3,7 +3,6 @@ package com.neko.cli;
 import static org.apache.commons.io.FileUtils.readFileToString;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import org.apache.commons.io.FilenameUtils;
