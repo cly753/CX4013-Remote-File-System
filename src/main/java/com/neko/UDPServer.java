@@ -9,12 +9,7 @@ import com.neko.msg.NekoData;
 import com.neko.msg.NekoDeserializer;
 import com.neko.msg.NekoSerializer;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -34,6 +29,33 @@ public class UDPServer {
 
     private static NekoCallbackClientTracker callbackClientTracker = new NekoCallbackClientTracker();
 
+    private static NekoData handleFileNotFound(String path) {
+        NekoData res = new NekoData();
+        String errorMessage = "The file does not exists: '" + path + "'";
+        System.out.println(errorMessage);
+        res.setOpcode(ERROR);
+        res.setError(errorMessage);
+        return res;
+    }
+
+    private static NekoData handleOffsetExceedsFileLength() {
+        NekoData res = new NekoData();
+        String errorMessage = "The specified offset exceeds the file length";
+        System.out.println(errorMessage);
+        res.setOpcode(ERROR);
+        res.setError(errorMessage);
+        return res;
+    }
+
+    private static NekoData handleIOException(String path, String op) {
+        NekoData res = new NekoData();
+        String errorMessage = "Error " + op + " file: '" + path + "'";
+        System.out.println(errorMessage);
+        res.setOpcode(ERROR);
+        res.setError(errorMessage);
+        return res;
+    }
+
     private static NekoData handleRead(String path, Integer offset, Integer length) {
         NekoData res = new NekoData();
         RandomAccessFile raf = null;
@@ -42,25 +64,16 @@ public class UDPServer {
             raf = new RandomAccessFile(path, "r");
             long fileLength = raf.length();
             if (offset > fileLength) {
-                res.setOpcode(ERROR);
-                String errorMessage = "The specified offset exceeds the file length";
-                res.setError(errorMessage);
-                System.out.println(errorMessage);
+                res = handleOffsetExceedsFileLength();
                 return res;
             }
             raf.seek(offset);
             raf.read(inputBuffer);
         } catch (FileNotFoundException e) {
-            String errorMessage = "The file does not exists: '" + path + "'";
-            System.out.println(errorMessage);
-            res.setOpcode(ERROR);
-            res.setError(errorMessage);
+            res = handleFileNotFound(path);
             return res;
         } catch (IOException e) {
-            String errorMessage = "Error reading file '" + path + "'";
-            System.out.println(errorMessage);
-            res.setOpcode(ERROR);
-            res.setError(errorMessage);
+            res = handleIOException(path, "reading");
             return res;
         } finally {
             try {
@@ -80,38 +93,54 @@ public class UDPServer {
         NekoData res = new NekoData();
 
         File file = new File(path);
-        FileInputStream fis = null;
+        long fileLength = file.length();
+        if (offset > fileLength) {
+            res = handleOffsetExceedsFileLength();
+            return res;
+        }
+        FileInputStream fis;
         FileOutputStream fos = null;
+        byte[] data = new byte[(int) file.length()];
+
+        //read
         try {
             fis = new FileInputStream(file);
-            byte[] data = new byte[(int) file.length()];
             fis.read(data);
+        } catch (FileNotFoundException e) {
+            res = handleFileNotFound(path);
+            return res;
+        } catch (IOException e) {
+            res = handleIOException(path, "writing");
+            return res;
+        }
 
+        //modify
+        String newText;
+        try {
             String oldtext = new String(data, "UTF-8");
-            String newText;
             if (offset == 0) {
                 newText = text + oldtext;
-            } else if (offset > text.length()) {
-                newText = oldtext + text;
             } else {
-                newText = text.substring(0, offset) + oldtext + text.substring(offset);
+                newText = oldtext.substring(0, offset) + text + oldtext.substring(offset);
             }
-
-            fos = new FileOutputStream(file, false); // false to overwrite.
-            fos.write(newText.getBytes());
-
-            callbackClientTracker.informUpdate(path, null);
-        } catch (FileNotFoundException e) {
-            String errorMessage = "Unable to open file '" + path + "'";
-            System.out.println(errorMessage);
+        } catch (UnsupportedEncodingException e) {
+            String errorMessage = "The file does not support UTF-8 encoding: '" + path + "'";
+            System.out.print(errorMessage);
             res.setOpcode(ERROR);
             res.setError(errorMessage);
             return res;
+        }
+
+        //write
+        try{
+            fos = new FileOutputStream(file, false); // false to overwrite.
+            fos.write(newText.getBytes());
+            callbackClientTracker.informUpdate(path, null);
+        } catch (FileNotFoundException e) {
+            res = handleFileNotFound(path);
+            return res;
         } catch (IOException e) {
-            String errorMessage = "Error writing file '" + path + "'";
-            System.out.println(errorMessage);
-            res.setOpcode(ERROR);
-            res.setError(errorMessage);
+            res = handleIOException(path, "writing");
             return res;
         } finally {
             try {
@@ -126,6 +155,7 @@ public class UDPServer {
             }
         }
         res.setOpcode(RESULT);
+        res.setNumber(text.length());
         return res;
     }
 
