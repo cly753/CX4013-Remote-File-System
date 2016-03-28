@@ -51,7 +51,7 @@ public class UDPServer {
             raf.seek(offset);
             raf.read(inputBuffer);
         } catch (FileNotFoundException e) {
-            String errorMessage = "Unable to open file '" + path + "'";
+            String errorMessage = "The file does not exists: '" + path + "'";
             System.out.println(errorMessage);
             res.setOpcode(ERROR);
             res.setError(errorMessage);
