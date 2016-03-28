@@ -40,6 +40,14 @@ public class UDPServer {
         byte[] inputBuffer = new byte[length];
         try {
             raf = new RandomAccessFile(path, "r");
+            long fileLength = raf.length();
+            if (offset + length > fileLength) {
+                res.setOpcode(ERROR);
+                String errorMessage = "Requested bytes exceeds the length of the file";
+                res.setError(errorMessage);
+                System.out.println(errorMessage);
+                return res;
+            }
             raf.seek(offset);
             raf.read(inputBuffer);
         } catch (FileNotFoundException e) {
