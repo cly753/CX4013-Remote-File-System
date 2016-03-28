@@ -10,6 +10,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.InputMismatchException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,12 +30,14 @@ public class NekoCallbackClient implements NekoCallback {
     private long validUntil;
 
     public NekoCallbackClient(byte[] host, int port, long validUntil) throws UnknownHostException {
+        checkValidUntilForConstructing(validUntil);
         this.host = InetAddress.getByAddress(host);
         this.port = port;
         this.validUntil = validUntil;
     }
 
     public NekoCallbackClient(String host, int port, long validUntil) throws UnknownHostException {
+        checkValidUntilForConstructing(validUntil);
         this.host = InetAddress.getByName(host);
         this.port = port;
         this.validUntil = validUntil;
@@ -42,9 +45,19 @@ public class NekoCallbackClient implements NekoCallback {
 
     public NekoCallbackClient(InetAddress host, int port, long validUntil)
             throws UnknownHostException {
+        checkValidUntilForConstructing(validUntil);
         this.host = host;
         this.port = port;
         this.validUntil = validUntil;
+    }
+
+    private void checkValidUntilForConstructing(long validUntil) {
+        if (validUntil < 0) {
+            throw new InputMismatchException("\"validUntil\" is negative");
+        }
+        if (validUntil < System.currentTimeMillis()) {
+            log.log(Level.WARNING, "\"validUntil\" has already passed.");
+        }
     }
 
     /**

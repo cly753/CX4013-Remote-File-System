@@ -9,33 +9,45 @@ $ gradle installDist
 ```
 
 Two files will be generated at `build/install/neko-file-system/bin/` folder, i.e. `neko-file-system` (for MAC OS
-and Linux) and `neko-file-system` (for Windows). We run the CLI by:
+and Linux) and `neko-file-system.bat` (for Windows). We run the CLI by:
 
 ```Shell
 $ cd build/install/neko-file-system/bin/
 
 $ ./neko-file-system
 # You should get the following output
-# usage: neko [OPTIONS]...
-#  -help   print this message
-#
-# usage: neko read [ARGS]
+# usage: neko [OPTIONS]
+#  -d,--debug     print debug message
+#  -h,--help      print this message
+#  -v,--verbose   print verbose message
+# 
+# usage: neko read [ARGS] <path>
 #  -b,--byte <arg>     the number of byte to be read
+#  -d,--debug          print debug message
 #  -o,--offset <arg>   read bytes starting from this offset
-#
-# usage: neko insert [ARGS]
+#  -v,--verbose        print verbose message
+# 
+# usage: neko insert [ARGS] <path>
+#  -d,--debug          print debug message
 #  -o,--offset <arg>   insert bytes starting from this offset
 #     --text <arg>     textOption to be inserted
-#
-# usage: neko monitor [ARGS]
+#  -v,--verbose        print verbose message
+# 
+# usage: neko monitor [ARGS] <path>
+#  -d,--debug        print debug message
 #     --time <arg>   time intervals in milliseconds
-#
-# usage: neko copy <path>
-#
-# usage: neko count <path>
+#  -v,--verbose      print verbose message
+# 
+# usage: neko copy [ARGS] <path>
+#  -d,--debug     print debug message
+#  -v,--verbose   print verbose message
+# 
+# usage: neko count [ARGS] <path>
+#  -d,--debug     print debug message
+#  -v,--verbose   print verbose message
 ```
 
-Here are some examplesg:
+Here are some examples:
 
 ```Shell
 # Read 500 bytes, starting from the first byte, from the given file
@@ -51,6 +63,17 @@ $ ./neko-file-system copy /home/andy/Documents/HelloWorld.txt
 
 # Count the number of files in the given path
 $ ./neko-file-system count /home/andy/Documents
+```
+
+Monitor examples:
+
+```Shell
+# Run the following command in a terminal
+# The command will monitor the specific file for 10 second at port 8888
+$ ./neko-file-system monitor --time 10000 --debug /Users/andyccs/Documents/hello.txt
+
+# Run the following command in another terminal
+$ ./neko-file-system insert -o 0 --text "hello world\n" /Users/andyccs/Documents/hello.txt
 ```
 
 # Getting Started

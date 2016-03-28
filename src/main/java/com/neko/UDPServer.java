@@ -1,59 +1,64 @@
 package com.neko;
 
 import static com.neko.msg.NekoOpcode.ERROR;
+import static com.neko.msg.NekoOpcode.LAST_MODIFIED;
 import static com.neko.msg.NekoOpcode.RESULT;
+import static org.apache.commons.io.FileUtils.readFileToString;
 
 import com.neko.monitor.NekoCallbackClient;
 import com.neko.monitor.NekoCallbackClientTracker;
 import com.neko.msg.NekoData;
 import com.neko.msg.NekoDeserializer;
 import com.neko.msg.NekoSerializer;
+import org.apache.commons.io.FileUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.channels.FileChannel;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class UDPServer {
+    private static final Logger log = Logger.getLogger(UDPServer.class.getName());
 
-    public static final int SERVER_PORT = 6789;
-    public static final int BUFFER_SIZE = 1000;
-    public static final int MONITOR_CLIENT_PORT = 8888;
+    private static final int SERVER_PORT = 6789;
+    private static final int BUFFER_SIZE = 1000;
+    private static final int MONITOR_CLIENT_PORT = 8888;
 
     private static final String COPY_POSTFIX = "_copy";
     private static boolean AT_MOST_ONE = true; //true for AT_MOST_ONE, false for AT_LEAST_ONE
     private static HashMap<String, NekoData> history = new HashMap<>();
 
-    private static NekoCallbackClientTracker callbackClientTracker = new NekoCallbackClientTracker();
+    private static NekoCallbackClientTracker callbackClientTracker =
+            new NekoCallbackClientTracker();
 
-    private static NekoData handleFileNotFound(String path) {
-        NekoData res = new NekoData();
-        String errorMessage = "The file does not exists: '" + path + "'";
-        System.out.println(errorMessage);
-        res.setOpcode(ERROR);
-        res.setError(errorMessage);
-        return res;
-    }
+    private static NekoData handleRead(String path) {
+        File file = new File(path);
+        String text;
+        try {
+            text = FileUtils.readFileToString(file);
+        } catch (IOException e) {
+            log.log(Level.WARNING, e.getMessage());
 
-    private static NekoData handleOffsetExceedsFileLength() {
-        NekoData res = new NekoData();
-        String errorMessage = "The specified offset exceeds the file length";
-        System.out.println(errorMessage);
-        res.setOpcode(ERROR);
-        res.setError(errorMessage);
-        return res;
-    }
-
-    private static NekoData handleIOException(String path, String op) {
-        NekoData res = new NekoData();
-        String errorMessage = "Error " + op + " file: '" + path + "'";
-        System.out.println(errorMessage);
-        res.setOpcode(ERROR);
-        res.setError(errorMessage);
-        return res;
+            NekoData errorRespond = new NekoData();
+            errorRespond.setOpcode(ERROR);
+            errorRespond.setError(e.getMessage());
+            return errorRespond;
+        }
+        NekoData respond = new NekoData();
+        respond.setOpcode(RESULT);
+        respond.setText(text);
+        respond.setLastModified(String.valueOf(file.lastModified()));
+        return respond;
     }
 
     private static NekoData handleRead(String path, Integer offset, Integer length) {
@@ -62,18 +67,17 @@ public class UDPServer {
         byte[] inputBuffer = new byte[length];
         try {
             raf = new RandomAccessFile(path, "r");
-            long fileLength = raf.length();
-            if (offset > fileLength) {
-                res = handleOffsetExceedsFileLength();
-                return res;
-            }
             raf.seek(offset);
             raf.read(inputBuffer);
         } catch (FileNotFoundException e) {
-            res = handleFileNotFound(path);
+            log.log(Level.WARNING, e.getMessage());
+            res.setOpcode(ERROR);
+            res.setError(e.getMessage());
             return res;
         } catch (IOException e) {
-            res = handleIOException(path, "reading");
+            log.log(Level.WARNING, e.getMessage());
+            res.setOpcode(ERROR);
+            res.setError(e.getMessage());
             return res;
         } finally {
             try {
@@ -93,69 +97,19 @@ public class UDPServer {
         NekoData res = new NekoData();
 
         File file = new File(path);
-        long fileLength = file.length();
-        if (offset > fileLength) {
-            res = handleOffsetExceedsFileLength();
-            return res;
-        }
-        FileInputStream fis;
-        FileOutputStream fos = null;
-        byte[] data = new byte[(int) file.length()];
-
-        //read
         try {
-            fis = new FileInputStream(file);
-            fis.read(data);
-        } catch (FileNotFoundException e) {
-            res = handleFileNotFound(path);
-            return res;
-        } catch (IOException e) {
-            res = handleIOException(path, "writing");
-            return res;
-        }
+            String oldtext = readFileToString(file);
+            String newText = oldtext.substring(0, offset) + text + oldtext.substring(offset);
+            FileUtils.writeStringToFile(file, newText);
 
-        //modify
-        String newText;
-        try {
-            String oldtext = new String(data, "UTF-8");
-            if (offset == 0) {
-                newText = text + oldtext;
-            } else {
-                newText = oldtext.substring(0, offset) + text + oldtext.substring(offset);
-            }
-        } catch (UnsupportedEncodingException e) {
-            String errorMessage = "The file does not support UTF-8 encoding: '" + path + "'";
-            System.out.print(errorMessage);
-            res.setOpcode(ERROR);
-            res.setError(errorMessage);
-            return res;
-        }
-
-        //write
-        try{
-            fos = new FileOutputStream(file, false); // false to overwrite.
-            fos.write(newText.getBytes());
             callbackClientTracker.informUpdate(path, null);
-        } catch (FileNotFoundException e) {
-            res = handleFileNotFound(path);
-            return res;
         } catch (IOException e) {
-            res = handleIOException(path, "writing");
+            log.log(Level.WARNING, e.getMessage());
+            res.setOpcode(ERROR);
+            res.setError(e.getMessage());
             return res;
-        } finally {
-            try {
-                if (fis != null) {
-                    fis.close();
-                }
-                if (fos != null) {
-                    fos.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
         res.setOpcode(RESULT);
-        res.setNumber(text.length());
         return res;
     }
 
@@ -164,7 +118,9 @@ public class UDPServer {
         res.setOpcode(RESULT);
 
         try {
-            NekoCallbackClient client = new NekoCallbackClient(address, MONITOR_CLIENT_PORT, interval);
+            long validUntil = System.currentTimeMillis() + interval;
+            NekoCallbackClient client =
+                    new NekoCallbackClient(address, MONITOR_CLIENT_PORT, validUntil);
             callbackClientTracker.register(path, client);
 
             // TODO
@@ -181,11 +137,11 @@ public class UDPServer {
     }
 
     private static String getCopyPath(String path) {
-        int p = path.lastIndexOf('.');
-        if (p == -1) {
+        int position = path.lastIndexOf('.');
+        if (position == -1) {
             return path + COPY_POSTFIX;
         }
-        return path.substring(0,p) + COPY_POSTFIX + path.substring(p);
+        return path.substring(0, position) + COPY_POSTFIX + path.substring(position);
     }
 
     private static NekoData handleCopy(String path) {
@@ -200,7 +156,7 @@ public class UDPServer {
         try {
             copyPath = getCopyPath(path);
             File destFile = new File(copyPath);
-            while(destFile.exists()) {
+            while (destFile.exists()) {
                 copyPath = getCopyPath(copyPath);
                 destFile = new File(copyPath);
             }
@@ -255,12 +211,24 @@ public class UDPServer {
         return res;
     }
 
-    public static void main(String[] args) {
-        if (args[0] == "1") {
-            AT_MOST_ONE = true;
-        } else {
-            AT_MOST_ONE = false;
+    private static NekoData handleLastModified(String path) {
+        File file = new File(path);
+        NekoData respond = new NekoData();
+        if (!file.exists()) {
+            respond.setOpcode(ERROR);
+            String errorMessage = path + " does not exists";
+            System.out.println(errorMessage);
+            respond.setError(errorMessage);
+            return respond;
         }
+
+        respond.setOpcode(LAST_MODIFIED);
+        respond.setLastModified(String.valueOf(file.lastModified()));
+        return respond;
+    }
+
+    public static void main(String[] args) {
+        AT_MOST_ONE = args.length > 0 && args[0].equals("1");
         DatagramSocket socket = null;
         try {
             //bound to host and port
@@ -278,16 +246,21 @@ public class UDPServer {
 
                 NekoData request = deserializer.deserialize(requestPacket.getData());
 
-                NekoData respond = new NekoData();
+                NekoData respond;
 
-                if (AT_MOST_ONE && history.containsKey(request.getRequestId())) {
-                    respond = history.get(request.getRequestId());
+                String requestId = request.getRequestId();
+                if (AT_MOST_ONE && history.containsKey(requestId)) {
+                    respond = history.get(requestId);
                 } else {
                     switch (request.getOpcode()) {
                         case READ:
-                            respond = handleRead(request.getPath(),
-                                    request.getOffset(),
-                                    request.getLength());
+                            if (request.getOffset() == null && request.getLength() == null) {
+                                respond = handleRead(request.getPath());
+                            } else {
+                                respond = handleRead(request.getPath(),
+                                        request.getOffset(),
+                                        request.getLength());
+                            }
                             break;
                         case INSERT:
                             respond = handleInsert(request.getPath(),
@@ -295,13 +268,18 @@ public class UDPServer {
                                     request.getText());
                             break;
                         case MONITOR:
-                            respond = handleMonitor(requestPacket.getAddress(), request.getPath(), request.getInterval());
+                            respond = handleMonitor(requestPacket.getAddress(),
+                                    request.getPath(),
+                                    request.getInterval());
                             break;
                         case COPY:
                             respond = handleCopy(request.getPath());
                             break;
                         case COUNT:
                             respond = handleCount(request.getPath());
+                            break;
+                        case LAST_MODIFIED:
+                            respond = handleLastModified(request.getPath());
                             break;
                         default:
                             // If the operation code is not defined, we just skip this request
