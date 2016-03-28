@@ -41,9 +41,9 @@ public class UDPServer {
         try {
             raf = new RandomAccessFile(path, "r");
             long fileLength = raf.length();
-            if (offset + length > fileLength) {
+            if (offset > fileLength) {
                 res.setOpcode(ERROR);
-                String errorMessage = "Requested bytes exceeds the length of the file";
+                String errorMessage = "The specified offset exceeds the file length";
                 res.setError(errorMessage);
                 System.out.println(errorMessage);
                 return res;
