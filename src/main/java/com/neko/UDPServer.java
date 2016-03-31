@@ -115,7 +115,7 @@ public class UDPServer {
 
     private static NekoData handleMonitor(InetAddress address, String path, Integer interval) {
         NekoData res = new NekoData();
-        res.setOpcode(RESULT);
+
 
         try {
             long validUntil = System.currentTimeMillis() + interval;
@@ -125,14 +125,16 @@ public class UDPServer {
 
             // TODO
             // set response to OK
-            res.setError(null);
         } catch (UnknownHostException e) {
             e.printStackTrace();
 
             // TODO
             // set response to ERROR
+            res.setOpcode(ERROR);
             res.setError("Unknown Host");
+            return res;
         }
+        res.setOpcode(RESULT);
         return res;
     }
 
