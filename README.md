@@ -98,6 +98,21 @@ $ javac UDPClient.java
 $ java -cp . UDPClient "hello" "localhost"
 ```
 
+# Simulation
+
+Neko server can be run in two different invocation semantic, i.e. at-least-once invocation semantic and at-most-once invocation semantic. The `UDPServer.java` can accept two input arguments.
+
+First argument is invocation semantic of server, possible values:
+
+- "0": at-least-once invocation semantic (default)
+- "1": at-most-once invocation semantic
+
+Second argument is unstable mode, possible values:
+
+- "0": stable
+- "1": reply packets from server will lost for 3 times
+- "2": request packets from client will lost for 3 times
+
 # Check Your Coding Style
 
 ```Shell

@@ -233,18 +233,24 @@ public class UDPServer {
         boolean atMostOnce = args.length > 0 && args[0].equals("1");
         log.info("at most once: " + atMostOnce);
 
-        // If the second argument is "1", the we use unstable datagram socket for simulation
+        // If the second argument is "1" and "2",
+        // then we use unstable datagram socket for simulation.
         // Else, we use normal datagram socket (default)
-        boolean unstable = args.length > 1 && args[1].equals("1");
+        //
+        // "1": reply packets from server will lost for 3 times
+        // "2": request packets from client will lost for 3 times
+        String unstable = args.length > 1 ? args[1] : "";
         log.info("unstable datagram: " + unstable);
 
         DatagramSocket socket = null;
         try {
             //bound to host and port
-            if (unstable) {
+            if (unstable.equals("1")) {
                 // The server will always receive the request packet, but
                 // will drop the first three reply packet.
                 socket = new UnstableDatagramSocket(SERVER_PORT, "1111111111", "0001111111");
+            } else if (unstable.equals("2")) {
+                socket = new UnstableDatagramSocket(SERVER_PORT, "0001111111", "1111111111");
             } else {
                 socket = new DatagramSocket(SERVER_PORT);
             }
