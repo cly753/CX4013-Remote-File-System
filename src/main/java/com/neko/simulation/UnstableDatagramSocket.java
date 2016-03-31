@@ -1,5 +1,7 @@
 package com.neko.simulation;
 
+import static com.neko.UDPServer.BUFFER_SIZE;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -47,9 +49,9 @@ public class UnstableDatagramSocket extends DatagramSocket {
 
         for (char c : sequenceString.toCharArray()) {
             if (c == '0') {
-                sequence.add(false);
-            } else {
                 sequence.add(true);
+            } else {
+                sequence.add(false);
             }
         }
     }
@@ -59,20 +61,21 @@ public class UnstableDatagramSocket extends DatagramSocket {
         if (dropSend()) {
             log.log(Level.ALL, "Drop send.");
             return;
-        } else {
-            log.log(Level.ALL, "Send.");
-            super.send(packet);
         }
+        log.log(Level.ALL, "Send.");
+        super.send(packet);
     }
 
     @Override
     public void receive(DatagramPacket packet) throws IOException {
+        super.receive(packet);
         if (dropReceive()) {
             log.log(Level.ALL, "Drop receive.");
-            return;
+            byte[] buffer = new byte[BUFFER_SIZE];
+            packet = new DatagramPacket(buffer, buffer.length);
+            receive(packet);
         } else {
             log.log(Level.ALL, "Receive.");
-            super.receive(packet);
         }
     }
 

@@ -123,12 +123,7 @@ public class Neko {
         countOptions.addOption(debug);
         countOptions.addOption(verbose);
 
-        log.setLevel(Level.INFO);
-
-        ConsoleHandler consoleHandler = new ConsoleHandler();
-        consoleHandler.setLevel(Level.ALL);
-
-        log.addHandler(consoleHandler);
+        log.setLevel(Level.ALL);
     }
 
     private static final String REQUEST_ID_1 = String.valueOf(System.currentTimeMillis());
@@ -169,10 +164,22 @@ public class Neko {
                 }
             } catch (SocketException exception) {
                 log.log(Level.WARNING, "Error: " + exception.getMessage());
-                log.log(Level.INFO, "Resending command");
+                log.log(Level.INFO, "Sleep 2 seconds and resending command");
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 continue;
             } catch (IOException exception) {
                 log.log(Level.WARNING, "Error: " + exception.getMessage());
+                log.log(Level.INFO, "Sleep 2 seconds and resending command");
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                continue;
             }
             break;
         }
@@ -295,7 +302,7 @@ public class Neko {
 
             NekoData respond = sendBytes(request);
             if (respond.getError() == null) {
-                log.log(Level.INFO, "copy done");
+                log.log(Level.INFO, "insert done");
             } else {
                 log.log(Level.INFO, "Error: " + respond.getError());
             }
@@ -465,17 +472,23 @@ public class Neko {
         DatagramPacket requestPacket =
                 new DatagramPacket(requestBytes, requestBytes.length, host, port);
 
+        DatagramSocket socket = null;
+        DatagramPacket replyPacket = null;
         // Send the datagram
-        DatagramSocket socket = new DatagramSocket(DATAGRAM_PORT);
-        socket.setSoTimeout(1000);
-        socket.send(requestPacket);
+        try {
+            socket = new DatagramSocket(DATAGRAM_PORT);
+            socket.setSoTimeout(1000);
+            socket.send(requestPacket);
 
-        // Receive the respond datagram from server
-        // TODO(andyccs): How to receive all respond bytes from server?
-        byte[] buffer = new byte[5000];
-        DatagramPacket replyPacket = new DatagramPacket(buffer, buffer.length);
-        socket.receive(replyPacket);
-        socket.close();
+            // Receive the respond datagram from server
+            // TODO(andyccs): How to receive all respond bytes from server?
+            byte[] buffer = new byte[5000];
+            replyPacket = new DatagramPacket(buffer, buffer.length);
+            socket.receive(replyPacket);
+        } finally {
+            socket.disconnect();
+            socket.close();
+        }
 
         // Deserialize the respond
         NekoDeserializer deserializer = new NekoDeserializer();

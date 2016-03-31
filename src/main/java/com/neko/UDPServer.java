@@ -10,6 +10,7 @@ import com.neko.monitor.NekoCallbackClientTracker;
 import com.neko.msg.NekoData;
 import com.neko.msg.NekoDeserializer;
 import com.neko.msg.NekoSerializer;
+import com.neko.simulation.UnstableDatagramSocket;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -31,11 +32,10 @@ public class UDPServer {
     private static final Logger log = Logger.getLogger(UDPServer.class.getName());
 
     private static final int SERVER_PORT = 6789;
-    private static final int BUFFER_SIZE = 1000;
+    public static final int BUFFER_SIZE = 1000;
     private static final int MONITOR_CLIENT_PORT = 8888;
 
     private static final String COPY_POSTFIX = "_copy";
-    private static boolean AT_MOST_ONE = true; //true for AT_MOST_ONE, false for AT_LEAST_ONE
     private static HashMap<String, NekoData> history = new HashMap<>();
 
     private static NekoCallbackClientTracker callbackClientTracker =
@@ -228,11 +228,26 @@ public class UDPServer {
     }
 
     public static void main(String[] args) {
-        AT_MOST_ONE = args.length > 0 && args[0].equals("1");
+        // If the first argument is "1", then we use at-most-once invocation semantic
+        // Else, we use at-least-once invocation semantic (default)
+        boolean atMostOnce = args.length > 0 && args[0].equals("1");
+        log.info("at most once: " + atMostOnce);
+
+        // If the second argument is "1", the we use unstable datagram socket for simulation
+        // Else, we use normal datagram socket (default)
+        boolean unstable = args.length > 1 && args[1].equals("1");
+        log.info("unstable datagram: " + unstable);
+
         DatagramSocket socket = null;
         try {
             //bound to host and port
-            socket = new DatagramSocket(SERVER_PORT);
+            if (unstable) {
+                // The server will always receive the request packet, but
+                // will drop the first three reply packet.
+                socket = new UnstableDatagramSocket(SERVER_PORT, "1111111111", "0001111111");
+            } else {
+                socket = new DatagramSocket(SERVER_PORT);
+            }
             NekoDeserializer deserializer = new NekoDeserializer();
             NekoSerializer serializer = new NekoSerializer();
 
@@ -249,7 +264,7 @@ public class UDPServer {
                 NekoData respond;
 
                 String requestId = request.getRequestId();
-                if (AT_MOST_ONE && history.containsKey(requestId)) {
+                if (atMostOnce && history.containsKey(requestId)) {
                     respond = history.get(requestId);
                 } else {
                     switch (request.getOpcode()) {
