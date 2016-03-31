@@ -310,6 +310,7 @@ public class UDPServer {
                         requestPacket.getAddress(),
                         requestPacket.getPort());
                 socket.send(reply); //send packet using socket method
+                history.put(requestId, respond);
             }
         } catch (Exception e) {
             e.printStackTrace();
