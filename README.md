@@ -76,27 +76,9 @@ $ ./neko-file-system monitor --time 10000 --debug /Users/andyccs/Documents/hello
 $ ./neko-file-system insert -o 0 --text "hello world\n" /Users/andyccs/Documents/hello.txt
 ```
 
-# Getting Started
+# Neko Server
 
-First, get an IDE (IntelliJ or Eclipse) and import this project using Gradle. 
-
-Next, run your server using the following commands
-
-```Shell
-# This is just temporary, as we will move these to a CLI tools
-$ cd src/main/java/com/neko
-$ javac UDPServer.java
-$ java -cp . UDPServer
-```
-
-Next, run your client using the following commands
-
-```Shell
-# This is just temporary, as we will move these to a CLI tools
-$ cd src/main/java/com/neko
-$ javac UDPClient.java
-$ java -cp . UDPClient "hello" "localhost"
-```
+First, get an IDE (IntelliJ or Eclipse) and import this project using Gradle. Next, run the `UDPServer.java` using your IDE. By default, the server is using at-least-once invocation sematic. To change this, you can supply arguments to `UDPServer.java`. The arguments that are accepted are shown in next section.
 
 # Simulation
 
@@ -109,7 +91,7 @@ First argument is invocation semantic of server, possible values:
 
 Second argument is unstable mode, possible values:
 
-- "0": stable
+- "0": stable (default)
 - "1": reply packets from server will lost for 3 times
 - "2": request packets from client will lost for 3 times
 
