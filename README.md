@@ -113,6 +113,15 @@ Second argument is unstable mode, possible values:
 - "1": reply packets from server will lost for 3 times
 - "2": request packets from client will lost for 3 times
 
+# Merge all codes into one file
+
+Why we want to do this? Well, as your lecture.
+
+```Shell
+# Copy from https://github.com/tanhauhau/Bueno4013
+$ sh merge.sh
+```
+
 # Check Your Coding Style
 
 ```Shell
