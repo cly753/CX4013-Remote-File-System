@@ -123,7 +123,12 @@ public class Neko {
         countOptions.addOption(debug);
         countOptions.addOption(verbose);
 
-        log.setLevel(Level.ALL);
+        log.setUseParentHandlers(false);
+        log.setLevel(Level.INFO);
+
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+        consoleHandler.setLevel(Level.ALL);
+        log.addHandler(consoleHandler);
     }
 
     private static final String REQUEST_ID_1 = String.valueOf(System.currentTimeMillis());

@@ -26,12 +26,3 @@ dependencies {
 task wrapper(type: Wrapper) {
     gradleVersion = '2.11'
 }
-
-jar {
-    from configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-    manifest {
-        attributes 'Implementation-Title': 'Neko CLI',
-            'Implementation-Version': version,
-            'Main-Class': 'com.neko.cli.Neko'
-    }
-}
