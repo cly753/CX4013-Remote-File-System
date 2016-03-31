@@ -115,7 +115,7 @@ Second argument is unstable mode, possible values:
 
 # Merge all codes into one file
 
-Why we want to do this? Well, as your lecture.
+Why we want to do this? Well, ask your lecture.
 
 ```Shell
 # Copy from https://github.com/tanhauhau/Bueno4013
