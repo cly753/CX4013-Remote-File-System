@@ -23,6 +23,7 @@ public class NekoOutputBuffer {
         cur++;
         return 1;
     }
+
     private int writeBytes(byte[] bytes) {
         if (bytes.length + cur > data.length) {
             throw new InputMismatchException("Internal byte array is full");
