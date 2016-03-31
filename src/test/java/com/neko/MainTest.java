@@ -8,11 +8,8 @@ import com.neko.monitor.NekoCallback;
 import com.neko.monitor.NekoCallbackClient;
 import com.neko.monitor.NekoCallbackClientTracker;
 import com.neko.monitor.NekoCallbackServer;
-import com.neko.msg.NekoByteBuffer;
-import com.neko.msg.NekoData;
-import com.neko.msg.NekoDeserializer;
-import com.neko.msg.NekoOpcode;
-import com.neko.msg.NekoSerializer;
+import com.neko.msg.*;
+import com.neko.msg.NekoOutputBuffer;
 import org.junit.Test;
 
 import java.net.UnknownHostException;
@@ -34,7 +31,7 @@ public class MainTest {
 
         NekoSerializer serializer = new NekoSerializer();
 
-        NekoByteBuffer byteBuffer = serializer.serialize(origin);
+        NekoOutputBuffer byteBuffer = serializer.serialize(origin);
         byte[] bytes = byteBuffer.toBytes();
 
         NekoDeserializer deserializer = new NekoDeserializer();
@@ -56,7 +53,7 @@ public class MainTest {
 
         NekoSerializer serializer = new NekoSerializer();
 
-        NekoByteBuffer byteBuffer = serializer.serialize(origin);
+        NekoOutputBuffer byteBuffer = serializer.serialize(origin);
         byte[] bytes = byteBuffer.toBytes();
 
         NekoDeserializer deserializer = new NekoDeserializer();

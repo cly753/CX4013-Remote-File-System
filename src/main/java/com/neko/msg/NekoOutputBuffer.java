@@ -4,13 +4,13 @@ import java.util.InputMismatchException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class NekoByteBuffer {
-    private static final Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
+public class NekoOutputBuffer {
+    private static final Logger log = Logger.getLogger(NekoOutputBuffer.class.getName());
 
     private byte[] data;
     private int cur;
 
-    public NekoByteBuffer(int size) {
+    public NekoOutputBuffer(int size) {
         this.data = new byte[size];
         this.cur = 0;
     }
@@ -23,7 +23,6 @@ public class NekoByteBuffer {
         cur++;
         return 1;
     }
-
     private int writeBytes(byte[] bytes) {
         if (bytes.length + cur > data.length) {
             throw new InputMismatchException("Internal byte array is full");

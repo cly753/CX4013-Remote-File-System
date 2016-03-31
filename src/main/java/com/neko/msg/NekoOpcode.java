@@ -13,7 +13,7 @@ public enum NekoOpcode {
     ERROR(6),
     LAST_MODIFIED(7);
 
-    private static final Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
+    private static final Logger log = Logger.getLogger(NekoOutputBuffer.class.getName());
 
     private static final NekoOpcode[] opcode;
 

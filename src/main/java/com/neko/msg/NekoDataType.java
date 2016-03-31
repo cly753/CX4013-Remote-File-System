@@ -7,7 +7,7 @@ public enum NekoDataType {
     INTEGER(0),
     STRING(1);
 
-    private static final Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
+    private static final Logger log = Logger.getLogger(NekoOutputBuffer.class.getName());
 
     private static final NekoDataType[] type;
 

@@ -14,7 +14,7 @@ public enum NekoAttribute {
     ERROR(7),
     LAST_MODIFIED(8);
 
-    private static final Logger log = Logger.getLogger(NekoByteBuffer.class.getName());
+    private static final Logger log = Logger.getLogger(NekoOutputBuffer.class.getName());
 
     private static final NekoAttribute[] attributes;
 
