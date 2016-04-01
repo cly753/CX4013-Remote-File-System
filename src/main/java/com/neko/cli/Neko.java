@@ -84,6 +84,11 @@ public class Neko {
             .hasArg()
             .withType(Integer.class)
             .create();
+    private static Option hostOption = OptionBuilder.withLongOpt("host")
+            .withDescription("host ip address")
+            .hasArg()
+            .withType(String.class)
+            .create();
 
     private static Options options = new Options();
     private static Options readOptions = new Options();
@@ -96,6 +101,7 @@ public class Neko {
         options.addOption(help);
         options.addOption(debug);
         options.addOption(verbose);
+        options.addOption(hostOption);
 
         readOptions.addOption(readOffsetOption);
         readOptions.addOption(byteOption);
@@ -103,25 +109,30 @@ public class Neko {
         readOptions.addOption(portOption);
         readOptions.addOption(debug);
         readOptions.addOption(verbose);
+        readOptions.addOption(hostOption);
 
         insertOptions.addOption(insertOffsetOption);
         insertOptions.addOption(textOption);
         insertOptions.addOption(portOption);
         insertOptions.addOption(debug);
         insertOptions.addOption(verbose);
+        insertOptions.addOption(hostOption);
 
         monitorOptions.addOption(timeOption);
         monitorOptions.addOption(portOption);
         monitorOptions.addOption(debug);
         monitorOptions.addOption(verbose);
+        monitorOptions.addOption(hostOption);
 
         copyOptions.addOption(portOption);
         copyOptions.addOption(debug);
         copyOptions.addOption(verbose);
+        copyOptions.addOption(hostOption);
 
         countOptions.addOption(portOption);
         countOptions.addOption(debug);
         countOptions.addOption(verbose);
+        countOptions.addOption(hostOption);
 
         log.setUseParentHandlers(false);
         log.setLevel(Level.INFO);
@@ -200,6 +211,7 @@ public class Neko {
             CommandLine line = parser.parse(readOptions, commandArgs);
             setLoggerLevel(line);
             setDatagramPort(line);
+            setHost(line);
 
             if (line.hasOption(freshnessOption.getLongOpt())) {
                 freshnessInterval = Long.parseLong(
@@ -291,6 +303,7 @@ public class Neko {
             CommandLine line = parser.parse(insertOptions, commandArgs);
             setLoggerLevel(line);
             setDatagramPort(line);
+            setHost(line);
 
             String filePath = getFilePath(line.getArgs());
 
@@ -325,6 +338,7 @@ public class Neko {
             CommandLine line = parser.parse(monitorOptions, commandArgs);
             setLoggerLevel(line);
             setDatagramPort(line);
+            setHost(line);
 
             String filePath = getFilePath(line.getArgs());
             Integer timeInterval = Integer.parseInt(line.getOptionValue("time"));
@@ -370,6 +384,7 @@ public class Neko {
             CommandLine line = parser.parse(copyOptions, commandArgs);
             setLoggerLevel(line);
             setDatagramPort(line);
+            setHost(line);
 
             String filePath = getFilePath(line.getArgs());
 
@@ -400,6 +415,7 @@ public class Neko {
             CommandLine line = parser.parse(countOptions, commandArgs);
             setLoggerLevel(line);
             setDatagramPort(line);
+            setHost(line);
 
             String filePath = getFilePath(line.getArgs());
 
@@ -436,6 +452,12 @@ public class Neko {
         }
     }
 
+    private static void setHost(CommandLine line) {
+        if (line.hasOption(hostOption.getLongOpt())) {
+            hostname = line.getOptionValue(hostOption.getLongOpt());
+        }
+    }
+
     private static void setDatagramPort(CommandLine line) {
         if (line.hasOption(portOption.getLongOpt())) {
             DATAGRAM_PORT = Integer.parseInt(line.getOptionValue(portOption.getLongOpt()));
@@ -463,7 +485,7 @@ public class Neko {
         formatter.printHelp("neko " + command + " [ARGS] <path>", options);
     }
 
-    private static final String hostname = "localhost";
+    private static String hostname = "localhost";
     private static final int port = 6789;
     private static int DATAGRAM_PORT = 2244;
 
